@@ -1,0 +1,10 @@
+{
+  "resourceName": "dynamo07b8c820",
+  "tableName": "dynamo07b8c820",
+  "partitionKey": {
+    "fieldName": "gridcontents",
+    "fieldType": "string"
+  },
+  "gsi": [],
+  "triggerFunctions": []
+}
