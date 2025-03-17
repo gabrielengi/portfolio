@@ -112,10 +112,16 @@ const ColorGrid = () => {
   const calculateOptimalCellSize = () => {
     const title = "GABE HOUSE";
     const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
+    
+    // Get window dimensions, using more reliable methods for mobile
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    
+    // Calculate required width with a bit more space for mobile
     const requiredWidth = minTitleWidth * 1.25;
     
     // Get the smaller of our default or the calculated size
-    let optimalSize = Math.min(20, Math.floor(window.innerWidth / requiredWidth));
+    let optimalSize = Math.min(20, Math.floor(windowWidth / requiredWidth));
     optimalSize = Math.max(5, optimalSize); // Make sure it's at least 5px
     
     return optimalSize;
@@ -221,17 +227,23 @@ const ColorGrid = () => {
     const title = "GABE HOUSE";
     const titleWidth = title.length * 4 - 1;
     
-    // Fixed grid center points
+    // Fixed grid center points that won't change
     const gridCenterX = 500;
     const gridCenterY = 250;
     
-    // Calculate viewport dimensions in grid cells
-    const viewportWidthInCells = Math.ceil(window.innerWidth / cellSize);
-    const viewportHeightInCells = Math.ceil(window.innerHeight / cellSize);
+    // Get reliable window dimensions for mobile
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
     
-    // Calculate offset to center the title
+    // Calculate viewport dimensions in grid cells - make sure to use current cellSize
+    const viewportWidthInCells = Math.ceil(windowWidth / cellSize);
+    const viewportHeightInCells = Math.ceil(windowHeight / cellSize);
+    
+    // Calculate offset to center the title - the important part
     const offsetX = gridCenterX - Math.floor(viewportWidthInCells / 2);
-    const offsetY = gridCenterY - Math.floor(viewportHeightInCells * 0.2);
+    
+    // For mobile, adjust vertical position to be higher up
+    const offsetY = gridCenterY - Math.floor(viewportHeightInCells * 0.35);
     
     return { x: offsetX, y: offsetY };
   };
@@ -239,18 +251,18 @@ const ColorGrid = () => {
   // Initialize and handle resize
   useEffect(() => {
     const handleResize = () => {
-      // Update cell size
-      const newCellSize = calculateOptimalCellSize();
-      setCellSize(newCellSize);
+      // Update dimensions first
+      const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
       
-      // Update dimensions
       setDimensions({
-        width: window.innerWidth,
-        height: window.innerHeight
+        width: windowWidth,
+        height: windowHeight
       });
       
-      // Recalculate viewport offset to keep title centered
-      setViewportOffset(calculateViewportOffset());
+      // Update cell size based on new dimensions
+      const newCellSize = calculateOptimalCellSize();
+      setCellSize(newCellSize);
     };
     
     // First initialization
@@ -258,6 +270,8 @@ const ColorGrid = () => {
       const initialGrid = initializeGrid();
       setGrid(initialGrid);
       initializedRef.current = true;
+      
+      // Do the initial calculations
       handleResize();
     }
     
@@ -265,7 +279,13 @@ const ColorGrid = () => {
     return () => {
       window.removeEventListener('resize', handleResize);
     };
-  }, [cellSize]);
+  }, []);
+  
+  // Update viewport offset whenever cell size or dimensions change
+  useEffect(() => {
+    // Recalculate viewport offset to keep title centered
+    setViewportOffset(calculateViewportOffset());
+  }, [cellSize, dimensions]);
   
   // Handle cell click
   const handleClick = (e) => {
@@ -291,8 +311,13 @@ const ColorGrid = () => {
   // Convert grid cells to visible cells within the viewport
   const getVisibleCells = () => {
     const cells = [];
-    const viewportWidthInCells = Math.ceil(window.innerWidth / cellSize);
-    const viewportHeightInCells = Math.ceil(window.innerHeight / cellSize);
+    
+    // Get reliable window dimensions
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    
+    const viewportWidthInCells = Math.ceil(windowWidth / cellSize);
+    const viewportHeightInCells = Math.ceil(windowHeight / cellSize);
     
     // Check each potential cell in viewport
     for (let vx = 0; vx < viewportWidthInCells; vx++) {
@@ -322,6 +347,7 @@ const ColorGrid = () => {
       ref={containerRef}
       className="w-screen h-screen fixed top-0 left-0 bg-white cursor-pointer overflow-hidden"
       onClick={handleClick}
+      style={{ touchAction: 'manipulation' }} // Improve touch handling
     >
       {getVisibleCells().map((cell, index) => (
         <div
