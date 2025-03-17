@@ -91,11 +91,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 
 const ColorGrid = () => {
-  const [grid, setGrid] = useState([]);
+  const [grid, setGrid] = useState({});
   const [cellSize, setCellSize] = useState(20);
+  const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const containerRef = useRef(null);
-  const titleInitializedRef = useRef(false);
+  const initializedRef = useRef(false);
   
   // Generate a random color
   const getRandomColor = () => {
@@ -107,10 +108,22 @@ const ColorGrid = () => {
     return color;
   };
   
-  // Define the GABE HOUSE title pattern
-  const createTitleCells = () => {
-    // Define the pixel patterns for each letter
-    const titlePattern = {
+  // Calculate optimal cell size based on window dimensions
+  const calculateOptimalCellSize = () => {
+    const title = "GABE HOUSE";
+    const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
+    const requiredWidth = minTitleWidth * 1.25;
+    
+    // Get the smaller of our default or the calculated size
+    let optimalSize = Math.min(20, Math.floor(window.innerWidth / requiredWidth));
+    optimalSize = Math.max(5, optimalSize); // Make sure it's at least 5px
+    
+    return optimalSize;
+  };
+  
+  // Get title pattern
+  const getTitlePattern = () => {
+    return {
       'G': [
         [1, 1, 1],
         [1, 0, 0],
@@ -166,18 +179,22 @@ const ColorGrid = () => {
         [0, 0, 0]
       ]
     };
-    
+  };
+  
+  // Initialize the grid with title
+  const initializeGrid = () => {
+    const newGrid = {};
     const title = "GABE HOUSE";
+    const titlePattern = getTitlePattern();
     const titleWidth = title.length * 4 - 1;
-    const gridWidth = Math.ceil(window.innerWidth / cellSize);
-    const gridHeight = Math.ceil(window.innerHeight / cellSize);
     
-    const startX = Math.floor((gridWidth - titleWidth) / 2);
-    const startY = Math.floor(gridHeight * 0.2);
+    // Create title cells at center of a fixed imaginary grid (e.g. 1000x1000)
+    const gridCenterX = 500;
+    const gridCenterY = 250;
+    const startX = gridCenterX - Math.floor(titleWidth / 2);
+    const startY = gridCenterY;
     
-    const titleCells = [];
-    
-    // Create the title grid
+    // Add title cells to grid
     for (let letterIndex = 0; letterIndex < title.length; letterIndex++) {
       const letter = title[letterIndex];
       const pattern = titlePattern[letter];
@@ -186,61 +203,118 @@ const ColorGrid = () => {
         for (let y = 0; y < pattern.length; y++) {
           for (let x = 0; x < pattern[y].length; x++) {
             if (pattern[y][x] === 1) {
-              titleCells.push({
-                x: startX + letterIndex * 4 + x,
-                y: startY + y,
-                color: '#000000',
-                isTitle: true
-              });
+              const cellX = startX + letterIndex * 4 + x;
+              const cellY = startY + y;
+              const key = `${cellX},${cellY}`;
+              newGrid[key] = { color: '#000000', isTitle: true };
             }
           }
         }
       }
     }
     
-    return titleCells;
+    return newGrid;
   };
   
-  // Handle window resize
+  // Calculate viewport offset to keep title centered
+  const calculateViewportOffset = () => {
+    const title = "GABE HOUSE";
+    const titleWidth = title.length * 4 - 1;
+    
+    // Fixed grid center points
+    const gridCenterX = 500;
+    const gridCenterY = 250;
+    
+    // Calculate viewport dimensions in grid cells
+    const viewportWidthInCells = Math.ceil(window.innerWidth / cellSize);
+    const viewportHeightInCells = Math.ceil(window.innerHeight / cellSize);
+    
+    // Calculate offset to center the title
+    const offsetX = gridCenterX - Math.floor(viewportWidthInCells / 2);
+    const offsetY = gridCenterY - Math.floor(viewportHeightInCells * 0.2);
+    
+    return { x: offsetX, y: offsetY };
+  };
+  
+  // Initialize and handle resize
   useEffect(() => {
-    const updateDimensions = () => {
+    const handleResize = () => {
+      // Update cell size
+      const newCellSize = calculateOptimalCellSize();
+      setCellSize(newCellSize);
+      
+      // Update dimensions
       setDimensions({
         width: window.innerWidth,
         height: window.innerHeight
       });
+      
+      // Recalculate viewport offset to keep title centered
+      setViewportOffset(calculateViewportOffset());
     };
     
-    window.addEventListener('resize', updateDimensions);
-    updateDimensions();
-    
-    return () => {
-      window.removeEventListener('resize', updateDimensions);
-    };
-  }, []);
-  
-  // Initialize title when dimensions change
-  useEffect(() => {
-    if (dimensions.width > 0 && dimensions.height > 0) {
-      if (!titleInitializedRef.current) {
-        // First time initialization - add title cells
-        const titleCells = createTitleCells();
-        setGrid(titleCells);
-        titleInitializedRef.current = true;
-      }
+    // First initialization
+    if (!initializedRef.current) {
+      const initialGrid = initializeGrid();
+      setGrid(initialGrid);
+      initializedRef.current = true;
+      handleResize();
     }
-  }, [dimensions]);
+    
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
+  }, [cellSize]);
   
   // Handle cell click
   const handleClick = (e) => {
-    const x = Math.floor(e.clientX / cellSize);
-    const y = Math.floor(e.clientY / cellSize);
+    const viewportX = Math.floor(e.clientX / cellSize);
+    const viewportY = Math.floor(e.clientY / cellSize);
     
-    // Check if this cell already has a color
-    const cellExists = grid.some(cell => cell.x === x && cell.y === y);
+    // Convert viewport coordinates to grid coordinates
+    const gridX = viewportX + viewportOffset.x;
+    const gridY = viewportY + viewportOffset.y;
     
-    if (!cellExists) {
-      setGrid([...grid, { x, y, color: getRandomColor() }]);
+    // Create grid cell key
+    const key = `${gridX},${gridY}`;
+    
+    // Don't override existing cells
+    if (!grid[key]) {
+      setGrid(prev => ({
+        ...prev,
+        [key]: { color: getRandomColor(), isTitle: false }
+      }));
     }
+  };
+  
+  // Convert grid cells to visible cells within the viewport
+  const getVisibleCells = () => {
+    const cells = [];
+    const viewportWidthInCells = Math.ceil(window.innerWidth / cellSize);
+    const viewportHeightInCells = Math.ceil(window.innerHeight / cellSize);
+    
+    // Check each potential cell in viewport
+    for (let vx = 0; vx < viewportWidthInCells; vx++) {
+      for (let vy = 0; vy < viewportHeightInCells; vy++) {
+        // Convert to grid coordinates
+        const gridX = vx + viewportOffset.x;
+        const gridY = vy + viewportOffset.y;
+        const key = `${gridX},${gridY}`;
+        
+        // If this cell exists in our grid, add it to visible cells
+        if (grid[key]) {
+          cells.push({
+            x: vx,
+            y: vy,
+            color: grid[key].color,
+            isTitle: grid[key].isTitle
+          });
+        }
+      }
+    }
+    
+    return cells;
   };
   
   return (
@@ -248,14 +322,10 @@ const ColorGrid = () => {
       ref={containerRef}
       className="w-screen h-screen fixed top-0 left-0 bg-white cursor-pointer overflow-hidden"
       onClick={handleClick}
-      style={{
-        width: `${window.innerWidth}px`,
-        height: `${window.innerHeight}px`
-      }}
     >
-      {grid.map((cell, index) => (
+      {getVisibleCells().map((cell, index) => (
         <div
-          key={index}
+          key={`${cell.x}-${cell.y}-${index}`}
           className="absolute"
           style={{
             backgroundColor: cell.color,
