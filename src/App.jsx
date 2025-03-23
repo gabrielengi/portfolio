@@ -54,6 +54,8 @@ const App = () => {
   const scrollToProjects = () => projectsRef.current?.scrollIntoView({ behavior: 'smooth' });
   const scrollToContact = () => contactRef.current?.scrollIntoView({ behavior: 'smooth' });
 
+  const isMobile = dimensions.width < 768;
+
   return (
     <div className="app-container"> 
       <NavigationMenu 
@@ -61,37 +63,32 @@ const App = () => {
         scrollToHome={scrollToHome} 
         scrollToProjects={scrollToProjects}
         scrollToContact={scrollToContact}
-        isMobile={dimensions.width < 768}
+        isMobile={isMobile}
       />
       <section 
         ref={homeRef} 
-        className="page-section" 
-        style={{
-          height: `${dimensions.height}px`,
-          width: '100%'
-        }}
+        className="page-section full-height"
+        style={{ height: `${dimensions.height}px` }}
       >
         <ColorGrid />
       </section>
       <section 
         ref={projectsRef} 
-        className="page-section" 
-        style={{
-          minHeight: `${dimensions.height}px`,
-          width: '100%'
-        }}
+        className="page-section full-height flex-center"
+        style={{ minHeight: `${dimensions.height}px` }}
       >
-        <Projects isMobile={dimensions.width < 768} />
+        <div className="content-container">
+          <Projects isMobile={isMobile} />
+        </div>
       </section>
       <section 
         ref={contactRef} 
-        className="page-section" 
-        style={{
-          minHeight: `${dimensions.height}px`,
-          width: '100%'
-        }}
+        className="page-section full-height flex-center"
+        style={{ minHeight: `${dimensions.height}px` }}
       >
-        <Contact isMobile={dimensions.width < 768} />
+        <div className="content-container">
+          <Contact isMobile={isMobile} />
+        </div>
       </section>
     </div>
   );
@@ -160,14 +157,11 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
 
 const Projects = ({ isMobile }) => {
   return (
-    <div style={{
-      width: '100%',
+    <div className="content-area projects-content" style={{
       padding: isMobile ? '20px 10px' : '40px 20px',
       backgroundColor: '#f5f5f5',
-      minHeight: '100%'
     }}>
-      <h1 style={{
-        textAlign: 'center',
+      <h1 className="text-center" style={{
         marginBottom: isMobile ? '20px' : '40px',
         color: '#333',
         fontSize: isMobile ? '24px' : '32px'
@@ -175,13 +169,7 @@ const Projects = ({ isMobile }) => {
         My Projects
       </h1>
       
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: isMobile ? '20px' : '30px',
-        maxWidth: '900px',
-        margin: '0 auto'
-      }}>
+      <div className="cards-container">
         <ProjectCard 
           title="Interactive Color Grid" 
           description="A dynamic grid where users can click on cells to change their color and view location data. Built with React and AWS Amplify for real-time database updates."
@@ -209,14 +197,11 @@ const Projects = ({ isMobile }) => {
 
 const Contact = ({ isMobile }) => {
   return (
-    <div style={{
-      width: '100%',
+    <div className="content-area contact-content" style={{
       padding: isMobile ? '20px 10px' : '40px 20px',
       backgroundColor: '#e8f4fc',
-      minHeight: '100%'
     }}>
-      <h1 style={{
-        textAlign: 'center',
+      <h1 className="text-center" style={{
         marginBottom: isMobile ? '20px' : '40px',
         color: '#333',
         fontSize: isMobile ? '24px' : '32px'
@@ -224,13 +209,7 @@ const Contact = ({ isMobile }) => {
         Contact Me
       </h1>
       
-      <div style={{
-        display: 'flex',
-        flexDirection: 'column',
-        gap: isMobile ? '20px' : '30px',
-        maxWidth: '900px',
-        margin: '0 auto'
-      }}>
+      <div className="cards-container">
         <ContactCard 
           title="Email" 
           value="contact@example.com"

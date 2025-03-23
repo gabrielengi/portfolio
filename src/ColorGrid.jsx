@@ -23,7 +23,7 @@ const ColorGrid = () => {
   const [resizing, setResizing] = useState(false);
   const gridWidth = 200, gridHeight = 200;
   const viewportCalls = useRef(0);
-  const [infoBox, setInfoBox] = useState({x: 500, y: -1, loc: "", date: ""});
+  const [infoBox, setInfoBox] = useState({x: -1, y: -1, loc: "", date: ""});
 
 
 
@@ -189,7 +189,7 @@ const ColorGrid = () => {
     setInfoBox({y: i*cellSize.current- 30, x: j*cellSize.current + 21, loc:loc, date:date});
   }
   function hideInfo(){
-    setInfoBox({x: -500, y: -1, loc:"", date:""});
+    setInfoBox({x: -1, y: -1, loc:"", date:""});
  console.log("hideinfo ");
   }
   const updateGrid = async (i,j,color) => {
@@ -318,6 +318,7 @@ const ColorGrid = () => {
 };
 
 function InfoBox({x, y, loc, date}) {
+  if(x < 0) return <div></div>
   return(
   <div className="infoBox"
   style={{
