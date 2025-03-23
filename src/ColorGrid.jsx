@@ -1,104 +1,340 @@
-// import React, {useState, useRef} from 'react'
+import React, {useState, useRef, useEffect} from 'react'
 
-// function Square({i, j, cellWidth, cellHeight}) {
-//   var color = 'white';
-//   const getRandomColor = () => {
-//     const letters = '0123456789ABCDEF';
-//     let color = '#';
-//     for (let i = 0; i < 6; i++) {
-//       color += letters[Math.floor(Math.random() * 16)];
-//     }
-//     return color;
-//   };
-    
-//   function onSquareClick() {
-//     console.log(i + ',' + j)
-//     color = getRandomColor();
-//   }
+import { generateClient } from 'aws-amplify/data'
 
-//   return (
-//     <div className="square" onClick={() => onSquareClick()} 
-//     style={{
-//       width:`${cellWidth}px`,
-//       height:`${cellHeight}px`,
-//       borderWidth:'1px',
-//       borderColor:'black',
-//       position:'absolute',
-//       backgroundColor:color,
-//       left: `${j * cellWidth}px`,
-//       top: `${i * cellHeight}px`,
-//     }}>
-      
-//     </div>
-//   );
-// }
+const client = generateClient();
 
 
 
-// const ColorGrid = () => {
-//   const [grid, setGrid] = useState([]);
-//   const [cellWidth, setCellWidth] = useState(20);
-//   const [cellHeight, setCellHeight] = useState(20);
-//   const [dimensions, setDimensions] = useState({ gw: 0, gh: 0, cw: 20, ch: 20 });
-//   var sizeCorrected = useRef(false);
-//   console.log("rendering");
-//   function correctSize() {
-//     var gwTemp = Math.trunc(window.innerWidth/dimensions.cw);
-//     var ghTemp = Math.trunc(window.innerHeight/dimensions.ch);
-//     var cwTemp = Math.round((dimensions.cw + (window.innerWidth % dimensions.cw) / gwTemp) ) ;
-//     var chTemp = Math.round((dimensions.ch + (window.innerHeight % dimensions.ch) / ghTemp) ) ; 
-//     console.log(dimensions.cw + ',' + dimensions.ch);
-//     sizeCorrected.current = true;
-//     setDimensions({gw: gwTemp, gh: ghTemp, cw: cwTemp, ch: chTemp});
-
-//   }
-
-//   if (!sizeCorrected.current)
-//     correctSize();
 
 
-  
-
-//  // var m = Math.trunc(window.innerWidth/cellWidth), n= Math.trunc(window.innerHeight/cellHeight);
-
-
-//   // window.addEventListener('resize', function(event) {
-//   //   correctSize();
-//   // }, true);
-//   // var G = new Array(x);
-//   // for (let i = 0; i < 100; i++) {
-//   //   G[i] = new Array(y);
-//   // }
-//   var G = new Array(dimensions.gh).fill(0).map(() => new Array(dimensions.gw).fill(0));
-//  // G[30][30] = 10000;
-
-//  console.log(dimensions.cw + ',' + dimensions.ch);
-//  console.log(G);
-
-
-//   return (
-//     <div>
-//       {G.map((row, i) =>(
-//         row.map((cell, j) =>(
-//           <Square key={i + j} i={i} j={j} cellWidth={dimensions.cw} cellHeight={dimensions.ch}/>
-//         ))
-//       ))}
-//     </div>
-//   );
-// };
-// export default ColorGrid;
-
-import React, { useState, useEffect, useRef } from 'react';
 
 const ColorGrid = () => {
-  const [grid, setGrid] = useState({});
-  const [cellSize, setCellSize] = useState(20);
-  const [viewportOffset, setViewportOffset] = useState({ x: 0, y: 0 });
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const containerRef = useRef(null);
-  const initializedRef = useRef(false);
+
+  const [grid, setGrid] = useState([]);
+  const cellSize = useRef(20);
+  const [viewWidth, setGridWidth] = useState(10);
+  const [viewHeight, setGridHeight] = useState(10);
+  const [viewportDimensions, setViewportDimensions] = useState({w: 0, h: 0}); 
+  const G = useRef(new Array(200).fill('white').map(() => new Array(200).fill('white')));
+  const GInfo = useRef(new Array(200).fill('n/a;n/a').map(() => new Array(200).fill('n/a;n/a')));
+  const [viewport, setViewport] = useState(new Array(1).fill('white').map(() => new Array(1).fill('white')));
+  const [loading, setLoading] = useState(true);
+  const [resizing, setResizing] = useState(false);
+  const gridWidth = 200, gridHeight = 200;
+  const viewportCalls = useRef(0);
+  const [infoBox, setInfoBox] = useState({x: 500, y: -1, loc: "", date: ""});
+
+
+
+  function logTitleX(grid) {
+    for(let i = 0; i <grid.length; i++) {
+      for (let j = 0; j <grid[i].length; j++){
+        if (grid[i][j] == 'black') {
+          return "logtitlex " + j;
+          
+        }
+      }
+    }
+  }
+
+  function fillViewport (h,w) {
+    console.log('fillviewport');
+ /*   viewport.current = new Array(screenHeightInCells).fill('0').map(()=> new Array(screenWidthInCells).fill('0'))
+    for (let i = 0; i < screenHeightInCells; i++) {
+      for (let j = 0; j < screenWidthInCells; j++) {
+        viewport.current[i][j] = G.current[i+viewportStartY][j+viewportStartX];
+      }
+    } */
+  //  const h = viewportDimensions.h, w = viewportDimensions.w;
+    const y = Math.ceil(gridHeight/2 - h/2);
+    const x = Math.ceil(gridWidth/2 - w/2);
+    var viewportTemp = new Array(h).fill('0').map(()=> new Array(w).fill('0'))
+    console.log( ", x = " + x );
+    for (let i = 0; i < h; i++) {
+      for (let j = 0; j < w; j++) {
+        viewportTemp[i][j] = G.current[i+y][j+x];
+      }
+    }
+    
+    setViewport(viewportTemp);
+    viewportCalls.current += viewportCalls.current;
+    console.log(logTitleX(viewport));
+  //  console.log("viewport " + viewport.current);
+  setResizing(false);
+  }
+
+
+  const title = "GABE HOUSE";
+  const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
+
+  const loadGrid = async () => {
+    // Fetch all existing grid items once
+    const { data: items, errors } = await client.models.Grid.list();
+    console.log("start loadgrid " + items);
+    
+    console.log(`Found ${items.length} items to delete`);
+    
+    // Step 2: Delete all items in parallel for efficiency
+    if (items.length > 0) {
+      const deletePromises = items.map(item => 
+        client.models.Grid.delete({ id: item.id })
+      );
+      
+      await Promise.all(deletePromises);
+      console.log(`Successfully deleted ${items.length} items`);
+    } else {
+      console.log("No items to delete");
+    }
+    
+    // initialize empty
+    var freshGrid = new Array(gridWidth * gridHeight).fill('white');
+    var freshInfo = new Array(gridWidth * gridHeight).fill("n/a");
+
+    await client.models.Grid.create({
+   //   initialized: true,
+   //   date: "n/a",
+      content: freshGrid.toString(),
+      info: freshInfo.toString(),
+    }); 
+
+    
+
+    addTitle(G.current, gridWidth, gridHeight, minTitleWidth, title);
+    
+    
+    // Fetch the updated grid items and log the content
+      const { data: newItems, errors: updatedErrors } = await client.models.Grid.list();
+      
+      var dbGrid = newItems[0].content.split(',');
+   
+      for (let i = 0; i < dbGrid.length; i++) {
+        if (G.current[Math.floor(i/gridHeight)][i%gridWidth] == 'white') {
+          G.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGrid[i];
+        } 
+      }
+
+      handleResize();
+      console.log('done loading');
+
+      setLoading(false);
+
+    
+  }
+
+
+  useEffect(() => {
+    
+   
+    loadGrid();
+    
+ //   fillViewport();
+
+    
+    window.addEventListener('resize', handleResize);
+    return () => {window.removeEventListener('resize', handleResize)}
+
+  }, [])
+
+
+ // useEffect(()=> {
+   // fillViewport();
+//  }, [viewportDimensions]); 
+
+  function handleResize() {
+    console.log("handle resize");
+    setResizing(true);
+    
+  // Get window dimensions, using more reliable methods for mobile
+    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    
+    
+    // Calculate required width with a bit more space for mobile
+    const requiredWidth = minTitleWidth * 1.25;
+
+    cellSize.current = Math.min(20, Math.floor(windowWidth / requiredWidth));
+    cellSize.current = Math.max(5, cellSize.current);
+    
+    console.log("window width = " + windowWidth + "cellsize " + cellSize.current + "requiredWidth " + requiredWidth);
+    // Get the smaller of our default or the calculated size
+    // let optimalSize = Math.min(20, Math.floor(windowWidth / requiredWidth));
+    // optimalSize = Math.max(5, optimalSize); // Make sure it's at least 5px
+    // cellSize = optimalSize;
   
-  // Generate a random color
+
+    let screenWidthInCells = Math.ceil(windowWidth / cellSize.current);
+    let screenHeightInCells = Math.ceil(windowHeight / cellSize.current);
+    console.log("swic,shic = " + screenWidthInCells + ", " + screenHeightInCells);
+    fillViewport(screenHeightInCells, screenWidthInCells);
+    setViewportDimensions({w: screenWidthInCells, h: screenHeightInCells});
+  
+  }
+  
+
+  
+
+  const printGridStr = async () => {
+    const { data: items, errors: errors } = await client.models.Grid.list();
+  }
+  function showInfo(i, j) {
+    const viewportStartY = Math.ceil(gridHeight/2 - viewportDimensions.h/2);
+    const viewportStartX = Math.ceil(gridWidth/2 - viewportDimensions.w/2);
+    const infoTokens = GInfo.current[i+viewportStartY][j+viewportStartX].split(';');
+    const loc = infoTokens[0];
+    const date =  infoTokens[1];
+    setInfoBox({y: i*cellSize.current- 30, x: j*cellSize.current + 21, loc:loc, date:date});
+  }
+  function hideInfo(){
+    setInfoBox({x: -500, y: -1, loc:"", date:""});
+ console.log("hideinfo ");
+  }
+  const updateGrid = async (i,j,color) => {
+    const viewportStartY = Math.ceil(gridHeight/2 - viewportDimensions.h/2);
+    const viewportStartX = Math.ceil(gridWidth/2 - viewportDimensions.w/2);
+    G.current[i+viewportStartY][j+viewportStartX] = color;
+    viewport[i][j]  = color;
+
+    const response = await fetch('https://ip2c.org/s');
+    const text = await response.text();
+    const today = new Date();
+    GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[1] + ';' + today.toLocaleDateString();
+   // const data = await response.json();
+    
+    console.log('update' + text.split(';')[1] + ';' + today.toLocaleDateString());
+   // console.log("city = " + data.city + ', ' + data.country + ", date = " + today.toLocaleDateString());
+    
+
+    await client.models.Grid.update({
+      info: GInfo.current.toString(),
+      //location: 'data.city + ', ' + data.country',
+  //    date: 'a',
+    // locationArray = :
+      content: G.current.toString(),
+    });
+
+ //   printGridStr();
+  }
+  
+
+    
+    
+  function addTitle(gCurrent, gridWidth, gridHeight, minTitleWidth, title) { // fills gCurrent with the title at its center
+    const getTitlePattern = () => {
+      return {
+        'G': [
+          [1, 1, 1],
+          [1, 0, 0],
+          [1, 0, 1],
+          [1, 1, 1]
+        ],
+        'A': [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+          [1, 0, 1]
+        ],
+        'B': [
+          [1, 1, 0],
+          [1, 0, 1],
+          [1, 1, 0],
+          [1, 1, 1]
+        ],
+        'E': [
+          [1, 1, 1],
+          [1, 0, 0],
+          [1, 1, 0],
+          [1, 1, 1]
+        ],
+        'H': [
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 1, 1],
+          [1, 0, 1]
+        ],
+        'O': [
+          [1, 1, 1],
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 1, 1]
+        ],
+        'U': [
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 0, 1],
+          [1, 1, 1]
+        ],
+        'S': [
+          [1, 1, 1],
+          [1, 0, 0],
+          [0, 1, 1],
+          [1, 1, 1]
+        ],
+        ' ': [
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0],
+          [0, 0, 0]
+        ]
+      };
+    };
+    const startX = Math.floor(gridWidth/2 - minTitleWidth/2);
+    const startY = gridHeight/2 - 2;
+    const titlePattern = getTitlePattern();
+
+    for (var i = 0; i < title.length; i++) {
+      for (var j = 0; j < 4; j++) {
+        for (var k = 0; k < 3; k++) {
+          if (titlePattern[title[i]][j][k]) {
+            gCurrent[startY + j][startX + i * 4 + k] = 'black';
+      //      console.log(startY + j + ', ' + (startX +i * 4 + k) + ',' + gCurrent[startY + j][startX + i * 4 + k] );
+          }
+        }
+      }
+    }
+  }
+  
+
+  if (loading) {
+    return (
+      <div></div>
+    );
+  }
+//  console.log(logTitleX(viewport));
+  console.log('render ' + logTitleX(viewport) + " cellsize " + cellSize.current);
+  return (
+    <div>
+      {viewport.map((row, i) =>(
+        row.map((cell, j) =>(
+          <Square  key={`${i}-${j}-${viewportDimensions.w}-${viewportDimensions.h}-${cellSize.current}`} i={i} j={j} cellWidth={cellSize.current} cellHeight={cellSize.current} updateGrid={updateGrid} initColor={viewport[i][j]} showInfo={()=>showInfo(i, j)} hideInfo={() => hideInfo()}/>
+        ))
+      ))}
+      <InfoBox key={`${infoBox.x}-${infoBox.y}`} x={infoBox.x} y={infoBox.y} loc={infoBox.loc} date={infoBox.date}/>
+    </div>
+  );
+};
+
+function InfoBox({x, y, loc, date}) {
+  return(
+  <div className="infoBox"
+  style={{
+    position:'absolute',
+    left: `${x}px`,
+    top: `${y}px`,
+    width: '120px',
+    height: '50px',
+    backgroundColor: 'yellow',
+    textAlign: 'left',
+  }}>
+    <p><b>loc: </b>{loc}</p>
+    <p><b>date: </b>{date}</p>
+  </div>
+  )
+
+} 
+
+function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, hideInfo}) {
+  const [color,setColor] = useState(initColor);
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
     let color = '#';
@@ -107,263 +343,42 @@ const ColorGrid = () => {
     }
     return color;
   };
-  
-  // Calculate optimal cell size based on window dimensions
-  const calculateOptimalCellSize = () => {
-    const title = "GABE HOUSE";
-    const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
     
-    // Get window dimensions, using more reliable methods for mobile
-    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    
-    // Calculate required width with a bit more space for mobile
-    const requiredWidth = minTitleWidth * 1.25;
-    
-    // Get the smaller of our default or the calculated size
-    let optimalSize = Math.min(20, Math.floor(windowWidth / requiredWidth));
-    optimalSize = Math.max(5, optimalSize); // Make sure it's at least 5px
-    
-    return optimalSize;
-  };
-  
-  // Get title pattern
-  const getTitlePattern = () => {
-    return {
-      'G': [
-        [1, 1, 1],
-        [1, 0, 0],
-        [1, 0, 1],
-        [1, 1, 1]
-      ],
-      'A': [
-        [1, 1, 1],
-        [1, 0, 1],
-        [1, 1, 1],
-        [1, 0, 1]
-      ],
-      'B': [
-        [1, 1, 0],
-        [1, 0, 1],
-        [1, 1, 0],
-        [1, 1, 1]
-      ],
-      'E': [
-        [1, 1, 1],
-        [1, 0, 0],
-        [1, 1, 0],
-        [1, 1, 1]
-      ],
-      'H': [
-        [1, 0, 1],
-        [1, 0, 1],
-        [1, 1, 1],
-        [1, 0, 1]
-      ],
-      'O': [
-        [1, 1, 1],
-        [1, 0, 1],
-        [1, 0, 1],
-        [1, 1, 1]
-      ],
-      'U': [
-        [1, 0, 1],
-        [1, 0, 1],
-        [1, 0, 1],
-        [1, 1, 1]
-      ],
-      'S': [
-        [1, 1, 1],
-        [1, 0, 0],
-        [0, 1, 1],
-        [1, 1, 1]
-      ],
-      ' ': [
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0],
-        [0, 0, 0]
-      ]
-    };
-  };
-  
-  // Initialize the grid with title
-  const initializeGrid = () => {
-    const newGrid = {};
-    const title = "GABE HOUSE";
-    const titlePattern = getTitlePattern();
-    const titleWidth = title.length * 4 - 1;
-    
-    // Create title cells at center of a fixed imaginary grid (e.g. 1000x1000)
-    const gridCenterX = 500;
-    const gridCenterY = 250;
-    const startX = gridCenterX - Math.floor(titleWidth / 2);
-    const startY = gridCenterY;
-    
-    // Add title cells to grid
-    for (let letterIndex = 0; letterIndex < title.length; letterIndex++) {
-      const letter = title[letterIndex];
-      const pattern = titlePattern[letter];
+  function onSquareClick() {
+    console.log(color);
+    if (color == 'white') {
       
-      if (pattern) {
-        for (let y = 0; y < pattern.length; y++) {
-          for (let x = 0; x < pattern[y].length; x++) {
-            if (pattern[y][x] === 1) {
-              const cellX = startX + letterIndex * 4 + x;
-              const cellY = startY + y;
-              const key = `${cellX},${cellY}`;
-              newGrid[key] = { color: '#000000', isTitle: true };
-            }
-          }
-        }
-      }
+      var newColor = getRandomColor();
+      updateGrid(i, j, newColor);
+      setColor(newColor);
     }
     
-    return newGrid;
-  };
-  
-  // Calculate viewport offset to keep title centered
-  const calculateViewportOffset = () => {
-    const title = "GABE HOUSE";
-    const titleWidth = title.length * 4 - 1;
-    
-    // Fixed grid center points that won't change
-    const gridCenterX = 500;
-    const gridCenterY = 250;
-    
-    // Get reliable window dimensions for mobile
-    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    
-    // Calculate viewport dimensions in grid cells - make sure to use current cellSize
-    const viewportWidthInCells = Math.ceil(windowWidth / cellSize);
-    const viewportHeightInCells = Math.ceil(windowHeight / cellSize);
-    
-    // Calculate offset to center the title - the important part
-    const offsetX = gridCenterX - Math.floor(viewportWidthInCells / 2);
-    
-    // For mobile, adjust vertical position to be higher up
-    const offsetY = gridCenterY - Math.floor(viewportHeightInCells * 0.35);
-    
-    return { x: offsetX, y: offsetY };
-  };
-  
-  // Initialize and handle resize
-  useEffect(() => {
-    const handleResize = () => {
-      // Update dimensions first
-      const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-      const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-      
-      setDimensions({
-        width: windowWidth,
-        height: windowHeight
-      });
-      
-      // Update cell size based on new dimensions
-      const newCellSize = calculateOptimalCellSize();
-      setCellSize(newCellSize);
-    };
-    
-    // First initialization
-    if (!initializedRef.current) {
-      const initialGrid = initializeGrid();
-      setGrid(initialGrid);
-      initializedRef.current = true;
-      
-      // Do the initial calculations
-      handleResize();
-    }
-    
-    window.addEventListener('resize', handleResize);
-    return () => {
-      window.removeEventListener('resize', handleResize);
-    };
-  }, []);
-  
-  // Update viewport offset whenever cell size or dimensions change
-  useEffect(() => {
-    // Recalculate viewport offset to keep title centered
-    setViewportOffset(calculateViewportOffset());
-  }, [cellSize, dimensions]);
-  
-  // Handle cell click
-  const handleClick = (e) => {
-    const viewportX = Math.floor(e.clientX / cellSize);
-    const viewportY = Math.floor(e.clientY / cellSize);
-    
-    // Convert viewport coordinates to grid coordinates
-    const gridX = viewportX + viewportOffset.x;
-    const gridY = viewportY + viewportOffset.y;
-    
-    // Create grid cell key
-    const key = `${gridX},${gridY}`;
-    
-    // Don't override existing cells
-    if (!grid[key]) {
-      setGrid(prev => ({
-        ...prev,
-        [key]: { color: getRandomColor(), isTitle: false }
-      }));
-    }
-  };
-  
-  // Convert grid cells to visible cells within the viewport
-  const getVisibleCells = () => {
-    const cells = [];
-    
-    // Get reliable window dimensions
-    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
-    
-    const viewportWidthInCells = Math.ceil(windowWidth / cellSize);
-    const viewportHeightInCells = Math.ceil(windowHeight / cellSize);
-    
-    // Check each potential cell in viewport
-    for (let vx = 0; vx < viewportWidthInCells; vx++) {
-      for (let vy = 0; vy < viewportHeightInCells; vy++) {
-        // Convert to grid coordinates
-        const gridX = vx + viewportOffset.x;
-        const gridY = vy + viewportOffset.y;
-        const key = `${gridX},${gridY}`;
-        
-        // If this cell exists in our grid, add it to visible cells
-        if (grid[key]) {
-          cells.push({
-            x: vx,
-            y: vy,
-            color: grid[key].color,
-            isTitle: grid[key].isTitle
-          });
-        }
-      }
-    }
-    
-    return cells;
-  };
-  
+  }
+
+  function onMouseOver(){
+    if(color != 'white' && color != 'black')
+      showInfo(i, j);
+  }
+  function onMouseLeave(){
+    if(color != 'white' && color != 'black')
+      hideInfo();
+  }
+//  console.log(color);
   return (
-    <div 
-      ref={containerRef}
-      className="w-screen h-screen fixed top-0 left-0 bg-white cursor-pointer overflow-hidden"
-      onClick={handleClick}
-      style={{ touchAction: 'manipulation' }} // Improve touch handling
-    >
-      {getVisibleCells().map((cell, index) => (
-        <div
-          key={`${cell.x}-${cell.y}-${index}`}
-          className="absolute"
-          style={{
-            backgroundColor: cell.color,
-            width: `${cellSize}px`,
-            height: `${cellSize}px`,
-            left: `${cell.x * cellSize}px`,
-            top: `${cell.y * cellSize}px`,
-          }}
-        />
-      ))}
+    <div className="square" onClick={() => onSquareClick()} onMouseOver={() => onMouseOver()} onMouseLeave={() => onMouseLeave()}
+    style={{
+      width:`${cellWidth}px`,
+      height:`${cellHeight}px`,
+      borderWidth:'0px',
+      borderColor:'black',
+      position:'absolute',
+      backgroundColor: color,
+      left: `${j * cellWidth}px`,
+      top: `${i * cellHeight}px`,
+    }}>
+      
     </div>
   );
-};
-
+}
 export default ColorGrid;
+
