@@ -146,8 +146,10 @@ const ColorGrid = () => {
     setResizing(true);
     
   // Get window dimensions, using more reliable methods for mobile
-    const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    // const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
+    // const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
+    const windowWidth = document.documentElement.clientWidth;
+    const windowHeight = document.documentElement.clientHeight;
     
     
     // Calculate required width with a bit more space for mobile
