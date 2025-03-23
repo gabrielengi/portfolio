@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
@@ -10,7 +10,6 @@ function App() {
   const homeRef = useRef(null);
   const projectsRef = useRef(null);
   const contactRef = useRef(null);
-  const isScrolling = useRef(false);
   const loading = useRef(true);
 
   const onDoneLoading = () => {
@@ -18,161 +17,20 @@ function App() {
     loading.current = false;
   }
   
-  const scrollToSection = (ref, page) => {
-    if (isScrolling.current) return;
-    
-    isScrolling.current = true;
-    setCurrentPage(page);
-    
-    ref.current.scrollIntoView({ behavior: 'smooth' });
-    
-    // Reset scrolling lock after animation completes
-    setTimeout(() => {
-      isScrolling.current = false;
-    }, 200); // Match this with your transition duration
+  const scrollToProjects = () => {
+    projectsRef.current.scrollIntoView({ behavior: 'smooth' });
+    setCurrentPage("projects");
   };
   
-  const scrollToProjects = () => scrollToSection(projectsRef, "projects");
-  const scrollToHome = () => scrollToSection(homeRef, "home");
-  const scrollToContact = () => scrollToSection(contactRef, "contact");
+  const scrollToHome = () => {
+    homeRef.current.scrollIntoView({ behavior: 'smooth' });
+    setCurrentPage("home");
+  };
 
-  // Handle snap scrolling and menu updates
-  useEffect(() => {
-    let lastScrollTop = 0;
-    let scrollTimeout;
-    
-    const handleScroll = () => {
-      if (isScrolling.current) return;
-      
-      clearTimeout(scrollTimeout);
-      
-      scrollTimeout = setTimeout(() => {
-        const scrollTop = window.scrollY;
-        const windowHeight = window.innerHeight;
-        const homeTop = homeRef.current.offsetTop;
-        const projectsTop = projectsRef.current.offsetTop;
-        const contactTop = contactRef.current.offsetTop;
-        
-        // Determine scroll direction
-        const scrollingDown = scrollTop > lastScrollTop;
-        lastScrollTop = scrollTop;
-        
-        // Find closest section based on scroll position
-        const homeDistance = Math.abs(scrollTop - homeTop);
-        const projectsDistance = Math.abs(scrollTop - projectsTop);
-        const contactDistance = Math.abs(scrollTop - contactTop);
-        
-        // Determine current section
-        let currentSection;
-        if (homeDistance < projectsDistance && homeDistance < contactDistance) {
-          currentSection = "home";
-        } else if (projectsDistance < homeDistance && projectsDistance < contactDistance) {
-          currentSection = "projects";
-        } else {
-          currentSection = "contact";
-        }
-        
-        // If scrolling and passed a threshold, snap to next section
-        if (Math.abs(scrollTop - lastScrollTop) > 50) {
-          if (scrollingDown) {
-            if (currentSection === "home") {
-              scrollToProjects();
-            } else if (currentSection === "projects") {
-              scrollToContact();
-            }
-          } else {
-            if (currentSection === "contact") {
-              scrollToProjects();
-            } else if (currentSection === "projects") {
-              scrollToHome();
-            }
-          }
-        } else {
-          // Update current page without scrolling
-          setCurrentPage(currentSection);
-        }
-      }, 50); // Short debounce
-    };
-    
-    // Add wheel event for more precise control
-    const handleWheel = (e) => {
-      if (isScrolling.current) {
-        e.preventDefault();
-        return;
-      }
-      
-      const delta = e.deltaY;
-      
-      if (Math.abs(delta) > 10) {
-        if (delta > 0) { // Scrolling down
-          if (currentPage === "home") {
-            e.preventDefault();
-            scrollToProjects();
-          } else if (currentPage === "projects") {
-            e.preventDefault();
-            scrollToContact();
-          }
-        } else { // Scrolling up
-          if (currentPage === "contact") {
-            e.preventDefault();
-            scrollToProjects();
-          } else if (currentPage === "projects") {
-            e.preventDefault();
-            scrollToHome();
-          }
-        }
-      }
-    };
-    
-    // Add event listeners
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('wheel', handleWheel, { passive: false });
-    
-    // Initial check on page load
-    setTimeout(() => {
-      const scrollTop = window.scrollY;
-      const homeTop = homeRef.current.offsetTop;
-      const projectsTop = projectsRef.current.offsetTop;
-      const contactTop = contactRef.current.offsetTop;
-      
-      if (Math.abs(scrollTop - homeTop) < 100) {
-     //   setCurrentPage("home");
-      } else if (Math.abs(scrollTop - projectsTop) < 100) {
-    //    setCurrentPage("projects");
-      } else if (Math.abs(scrollTop - contactTop) < 100) {
-    //    setCurrentPage("contact");
-      }
-    }, 100);
-    
-    // Clean up event listeners
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('wheel', handleWheel);
-      clearTimeout(scrollTimeout);
-    };
-  }, [currentPage]);
-
-  // Apply CSS for snap scrolling
-  useEffect(() => {
-    // Add CSS to enable smooth scrolling behavior
-    document.documentElement.style.scrollBehavior = 'smooth';
-    document.body.style.overflowY = 'auto';
-    document.body.style.scrollSnapType = 'y mandatory';
-    
-    // Get all section elements and apply snap alignment
-    const sections = document.querySelectorAll('.page-section');
-    sections.forEach(section => {
-      section.style.scrollSnapAlign = 'start';
-      section.style.height = '100vh';
-    });
-    
-    return () => {
-      // Clean up styles when component unmounts
-      document.documentElement.style.scrollBehavior = '';
-      document.body.style.overflowY = '';
-      document.body.style.scrollSnapType = '';
-    };
-  }, []);
+  const scrollToContact = () => {
+    contactRef.current.scrollIntoView({ behavior: 'smooth' });
+    setCurrentPage("contact");
+  };
 
   return (
     <div className="app-container"> 
@@ -182,13 +40,13 @@ function App() {
         scrollToProjects={scrollToProjects}
         scrollToContact={scrollToContact}
       />
-      <section ref={homeRef} className="page-section" style={{ height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <section ref={homeRef} className="page-section" style={{height:"100vh"}}>
         <ColorGrid/>
       </section>
-      <section ref={projectsRef} className="page-section" style={{ minHeight: '100vh' }}>
+      <section ref={projectsRef} className="page-section" style={{height:"100vh"}}>
         <Projects />
       </section>
-      <section ref={contactRef} className="page-section" style={{ minHeight: '100vh' }}>
+      <section ref={contactRef} className="page-section" style={{height:"100vh"}}>
         <Contact />
       </section>
     </div>
@@ -203,7 +61,6 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
       right: '20px',
       zIndex: 1000,
       backgroundColor: 'rgba(255, 255, 255, 0.8)',
-      
       padding: '8px 16px',
       borderRadius: '5px',
       boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
@@ -215,12 +72,10 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         style={{
           border: 'none',
           background: 'none',
-          outline: '0px',
           fontSize: '16px',
           fontWeight: currentPage === "home" ? 'bold' : 'normal',
           color: currentPage === "home" ? '#007bff' : '#333',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          cursor: 'pointer'
         }}
       >
         Home
@@ -229,13 +84,11 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         onClick={scrollToProjects} 
         style={{
           border: 'none',
-          outline: '0px',
           background: 'none',
           fontSize: '16px',
           fontWeight: currentPage === "projects" ? 'bold' : 'normal',
           color: currentPage === "projects" ? '#007bff' : '#333',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          cursor: 'pointer'
         }}
       >
         Projects
@@ -244,13 +97,11 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         onClick={scrollToContact} 
         style={{
           border: 'none',
-          outline: '0px',
           background: 'none',
           fontSize: '16px',
           fontWeight: currentPage === "contact" ? 'bold' : 'normal',
           color: currentPage === "contact" ? '#007bff' : '#333',
-          cursor: 'pointer',
-          transition: 'all 0.3s ease'
+          cursor: 'pointer'
         }}
       >
         Contact
@@ -264,17 +115,14 @@ const Projects = () => {
     <div style={{
       width: '100%',
       padding: '40px 20px',
-      backgroundColor: '#f5f5f5',
-      minHeight: '100vh',
-      boxSizing: 'border-box'
+      backgroundColor: '#f5f5f5'
     }}>
       <h1 style={{
         textAlign: 'center',
         marginBottom: '40px',
-        color: '#333',
-        paddingTop: '60px'
+        color: '#333'
       }}>
-        My Projects
+        <p>My Projects</p>
       </h1>
       
       <div style={{
@@ -312,16 +160,14 @@ const Contact = () => {
       width: '100%',
       padding: '40px 20px',
       backgroundColor: '#e8f4fc',
-      minHeight: '100vh',
-      boxSizing: 'border-box'
+      minHeight: '80vh'
     }}>
       <h1 style={{
         textAlign: 'center',
         marginBottom: '40px',
-        color: '#333',
-        paddingTop: '60px'
+        color: '#333'
       }}>
-        Contact Me
+        <p>Contact Me</p>
       </h1>
       
       <div style={{
@@ -364,20 +210,12 @@ const ContactCard = ({ title, value, icon, action }) => {
         borderRadius: '8px',
         padding: '25px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out',
+        transition: 'transform 0.2s ease-in-out',
         display: 'flex',
         alignItems: 'center',
         cursor: 'pointer'
       }}
       onClick={() => window.open(action, '_blank')}
-      onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-      }}
     >
       <div style={{
         fontSize: '36px',
@@ -395,23 +233,13 @@ const ContactCard = ({ title, value, icon, action }) => {
 
 const ProjectCard = ({ title, description, technologies }) => {
   return (
-    <div 
-      style={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: '25px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out'
-      }}
-      onMouseOver={(e) => {
-        e.currentTarget.style.transform = 'translateY(-5px)';
-        e.currentTarget.style.boxShadow = '0 6px 12px rgba(0, 0, 0, 0.15)';
-      }}
-      onMouseOut={(e) => {
-        e.currentTarget.style.transform = 'translateY(0)';
-        e.currentTarget.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
-      }}
-    >
+    <div style={{
+      backgroundColor: 'white',
+      borderRadius: '8px',
+      padding: '25px',
+      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
+      transition: 'transform 0.2s ease-in-out'
+    }}>
       <h2 style={{ marginTop: 0, color: '#222' }}>{title}</h2>
       <p style={{ color: '#555', lineHeight: '1.6' }}>{description}</p>
       
