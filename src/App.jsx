@@ -40,13 +40,13 @@ function App() {
         scrollToProjects={scrollToProjects}
         scrollToContact={scrollToContact}
       />
-      <section ref={homeRef} className="page-section" style={{height:"100vh"}}>
+      <section ref={homeRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
         <ColorGrid/>
       </section>
-      <section ref={projectsRef} className="page-section" style={{height:"100vh"}}>
+      <section ref={projectsRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
         <Projects />
       </section>
-      <section ref={contactRef} className="page-section" style={{height:"100vh"}}>
+      <section ref={contactRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
         <Contact />
       </section>
     </div>
@@ -115,7 +115,8 @@ const Projects = () => {
     <div style={{
       width: '100%',
       padding: '40px 20px',
-      backgroundColor: '#f5f5f5'
+      backgroundColor: '#f5f5f5',
+      width: '100wh',
     }}>
       <h1 style={{
         textAlign: 'center',
@@ -160,7 +161,8 @@ const Contact = () => {
       width: '100%',
       padding: '40px 20px',
       backgroundColor: '#e8f4fc',
-      minHeight: '80vh'
+      minHeight: '20vh',
+      width: '100wh',
     }}>
       <h1 style={{
         textAlign: 'center',
@@ -212,6 +214,7 @@ const ContactCard = ({ title, value, icon, action }) => {
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         transition: 'transform 0.2s ease-in-out',
         display: 'flex',
+        width: '100wh',
         alignItems: 'center',
         cursor: 'pointer'
       }}
@@ -236,6 +239,7 @@ const ProjectCard = ({ title, description, technologies }) => {
     <div style={{
       backgroundColor: 'white',
       borderRadius: '8px',
+      width: '100wh',
       padding: '25px',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
       transition: 'transform 0.2s ease-in-out'
