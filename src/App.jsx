@@ -99,6 +99,7 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
     <div className="nav-menu" style={{
       position: 'fixed',
       top: isMobile ? '10px' : '20px',
+      marginTop: '1px',
       right: isMobile ? '10px' : '20px',
       zIndex: 1000,
       backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -106,7 +107,8 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
       borderRadius: '5px',
       boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
       display: 'flex',
-      gap: isMobile ? '10px' : '15px'
+      gap: isMobile ? '10px' : '15px',
+      
     }}>
       <button 
         onClick={scrollToHome} 
@@ -117,7 +119,8 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
           fontWeight: currentPage === "home" ? 'bold' : 'normal',
           color: currentPage === "home" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px'
+          padding: isMobile ? '5px' : '8px',
+          outline: '0px'
         }}
       >
         Home
@@ -131,7 +134,8 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
           fontWeight: currentPage === "projects" ? 'bold' : 'normal',
           color: currentPage === "projects" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px'
+          padding: isMobile ? '5px' : '8px',
+          outline: '0px'
         }}
       >
         Projects
@@ -145,7 +149,8 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
           fontWeight: currentPage === "contact" ? 'bold' : 'normal',
           color: currentPage === "contact" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px'
+          padding: isMobile ? '5px' : '8px',
+          outline: '0px'
         }}
       >
         Contact
