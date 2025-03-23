@@ -1,36 +1,58 @@
-import { useState, useRef } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import ColorGrid from './ColorGrid.jsx'
-import TodoList from './TodoList.tsx'
+import React, { useRef, useState, useEffect } from 'react';
+import ColorGrid from './ColorGrid';
 
-function App() {
-  const [currentPage, setCurrentPage] = useState("home");
+const App = () => {
   const homeRef = useRef(null);
   const projectsRef = useRef(null);
   const contactRef = useRef(null);
-  const loading = useRef(true);
+  const [currentPage, setCurrentPage] = useState("home");
+  const [dimensions, setDimensions] = useState({
+    width: document.documentElement.clientWidth,
+    height: document.documentElement.clientHeight
+  });
 
-  const onDoneLoading = () => {
-    console.log('ondoneloading');
-    loading.current = false;
-  }
-  
-  const scrollToProjects = () => {
-    projectsRef.current.scrollIntoView({ behavior: 'smooth' });
-    setCurrentPage("projects");
-  };
-  
-  const scrollToHome = () => {
-    homeRef.current.scrollIntoView({ behavior: 'smooth' });
-    setCurrentPage("home");
-  };
+  // Update dimensions on window resize
+  useEffect(() => {
+    const handleResize = () => {
+      setDimensions({
+        width: document.documentElement.clientWidth,
+        height: document.documentElement.clientHeight
+      });
+    };
+    
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
-  const scrollToContact = () => {
-    contactRef.current.scrollIntoView({ behavior: 'smooth' });
-    setCurrentPage("contact");
-  };
+  // Scroll observer to update current page
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            if (entry.target === homeRef.current) setCurrentPage("home");
+            else if (entry.target === projectsRef.current) setCurrentPage("projects");
+            else if (entry.target === contactRef.current) setCurrentPage("contact");
+          }
+        });
+      },
+      { threshold: 0.5 }
+    );
+    
+    if (homeRef.current) observer.observe(homeRef.current);
+    if (projectsRef.current) observer.observe(projectsRef.current);
+    if (contactRef.current) observer.observe(contactRef.current);
+    
+    return () => {
+      if (homeRef.current) observer.unobserve(homeRef.current);
+      if (projectsRef.current) observer.unobserve(projectsRef.current);
+      if (contactRef.current) observer.unobserve(contactRef.current);
+    };
+  }, []);
+
+  const scrollToHome = () => homeRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToProjects = () => projectsRef.current?.scrollIntoView({ behavior: 'smooth' });
+  const scrollToContact = () => contactRef.current?.scrollIntoView({ behavior: 'smooth' });
 
   return (
     <div className="app-container"> 
@@ -39,43 +61,66 @@ function App() {
         scrollToHome={scrollToHome} 
         scrollToProjects={scrollToProjects}
         scrollToContact={scrollToContact}
+        isMobile={dimensions.width < 768}
       />
-      <section ref={homeRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
-        <ColorGrid/>
+      <section 
+        ref={homeRef} 
+        className="page-section" 
+        style={{
+          height: `${dimensions.height}px`,
+          width: '100%'
+        }}
+      >
+        <ColorGrid />
       </section>
-      <section ref={projectsRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
-        <Projects />
+      <section 
+        ref={projectsRef} 
+        className="page-section" 
+        style={{
+          minHeight: `${dimensions.height}px`,
+          width: '100%'
+        }}
+      >
+        <Projects isMobile={dimensions.width < 768} />
       </section>
-      <section ref={contactRef} className="page-section" style={{height:"100vh", width:"100wh"}}>
-        <Contact />
+      <section 
+        ref={contactRef} 
+        className="page-section" 
+        style={{
+          minHeight: `${dimensions.height}px`,
+          width: '100%'
+        }}
+      >
+        <Contact isMobile={dimensions.width < 768} />
       </section>
     </div>
   );
 };
 
-const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToContact }) => {
+const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToContact, isMobile }) => {
   return (
     <div className="nav-menu" style={{
       position: 'fixed',
-      top: '20px',
-      right: '20px',
+      top: isMobile ? '10px' : '20px',
+      right: isMobile ? '10px' : '20px',
       zIndex: 1000,
       backgroundColor: 'rgba(255, 255, 255, 0.8)',
-      padding: '8px 16px',
+      padding: isMobile ? '5px 10px' : '8px 16px',
       borderRadius: '5px',
       boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
       display: 'flex',
-      gap: '15px'
+      gap: isMobile ? '10px' : '15px'
     }}>
       <button 
         onClick={scrollToHome} 
         style={{
           border: 'none',
           background: 'none',
-          fontSize: '16px',
+          fontSize: isMobile ? '14px' : '16px',
           fontWeight: currentPage === "home" ? 'bold' : 'normal',
           color: currentPage === "home" ? '#007bff' : '#333',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          padding: isMobile ? '5px' : '8px'
         }}
       >
         Home
@@ -85,10 +130,11 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         style={{
           border: 'none',
           background: 'none',
-          fontSize: '16px',
+          fontSize: isMobile ? '14px' : '16px',
           fontWeight: currentPage === "projects" ? 'bold' : 'normal',
           color: currentPage === "projects" ? '#007bff' : '#333',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          padding: isMobile ? '5px' : '8px'
         }}
       >
         Projects
@@ -98,10 +144,11 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         style={{
           border: 'none',
           background: 'none',
-          fontSize: '16px',
+          fontSize: isMobile ? '14px' : '16px',
           fontWeight: currentPage === "contact" ? 'bold' : 'normal',
           color: currentPage === "contact" ? '#007bff' : '#333',
-          cursor: 'pointer'
+          cursor: 'pointer',
+          padding: isMobile ? '5px' : '8px'
         }}
       >
         Contact
@@ -110,26 +157,28 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
   );
 };
 
-const Projects = () => {
+
+const Projects = ({ isMobile }) => {
   return (
     <div style={{
       width: '100%',
-      padding: '40px 20px',
+      padding: isMobile ? '20px 10px' : '40px 20px',
       backgroundColor: '#f5f5f5',
-      width: '100wh',
+      minHeight: '100%'
     }}>
       <h1 style={{
         textAlign: 'center',
-        marginBottom: '40px',
-        color: '#333'
+        marginBottom: isMobile ? '20px' : '40px',
+        color: '#333',
+        fontSize: isMobile ? '24px' : '32px'
       }}>
-        <p>My Projects</p>
+        My Projects
       </h1>
       
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '30px',
+        gap: isMobile ? '20px' : '30px',
         maxWidth: '900px',
         margin: '0 auto'
       }}>
@@ -137,45 +186,48 @@ const Projects = () => {
           title="Interactive Color Grid" 
           description="A dynamic grid where users can click on cells to change their color and view location data. Built with React and AWS Amplify for real-time database updates."
           technologies={["React", "AWS Amplify", "CSS Grid", "Geolocation API"]}
+          isMobile={isMobile}
         />
         
         <ProjectCard 
           title="Data Visualization Dashboard" 
           description="A comprehensive dashboard for visualizing complex datasets with interactive charts and filtering capabilities. Designed for both desktop and mobile viewing."
           technologies={["React", "D3.js", "Responsive Design", "REST API"]}
+          isMobile={isMobile}
         />
         
         <ProjectCard 
           title="AI-Powered Task Manager" 
           description="A smart task management application that uses machine learning to prioritize and categorize tasks. Features include natural language processing for task entry and smart scheduling."
           technologies={["React", "TensorFlow.js", "LocalStorage", "Progressive Web App"]}
+          isMobile={isMobile}
         />
       </div>
     </div>
   );
 };
 
-const Contact = () => {
+const Contact = ({ isMobile }) => {
   return (
     <div style={{
       width: '100%',
-      padding: '40px 20px',
+      padding: isMobile ? '20px 10px' : '40px 20px',
       backgroundColor: '#e8f4fc',
-      minHeight: '20vh',
-      width: '100wh',
+      minHeight: '100%'
     }}>
       <h1 style={{
         textAlign: 'center',
-        marginBottom: '40px',
-        color: '#333'
+        marginBottom: isMobile ? '20px' : '40px',
+        color: '#333',
+        fontSize: isMobile ? '24px' : '32px'
       }}>
-        <p>Contact Me</p>
+        Contact Me
       </h1>
       
       <div style={{
         display: 'flex',
         flexDirection: 'column',
-        gap: '30px',
+        gap: isMobile ? '20px' : '30px',
         maxWidth: '900px',
         margin: '0 auto'
       }}>
@@ -184,6 +236,7 @@ const Contact = () => {
           value="contact@example.com"
           icon="📧"
           action="mailto:contact@example.com"
+          isMobile={isMobile}
         />
         
         <ContactCard 
@@ -191,6 +244,7 @@ const Contact = () => {
           value="linkedin.com/in/yourprofile"
           icon="💼"
           action="https://linkedin.com/in/yourprofile"
+          isMobile={isMobile}
         />
         
         <ContactCard 
@@ -198,64 +252,95 @@ const Contact = () => {
           value="github.com/yourusername"
           icon="💻"
           action="https://github.com/yourusername"
+          isMobile={isMobile}
         />
       </div>
     </div>
   );
 };
 
-const ContactCard = ({ title, value, icon, action }) => {
+const ContactCard = ({ title, value, icon, action, isMobile }) => {
   return (
     <div 
       style={{
         backgroundColor: 'white',
         borderRadius: '8px',
-        padding: '25px',
+        padding: isMobile ? '15px' : '25px',
         boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
         transition: 'transform 0.2s ease-in-out',
         display: 'flex',
-        width: '100wh',
+        width: '100%',
         alignItems: 'center',
         cursor: 'pointer'
       }}
       onClick={() => window.open(action, '_blank')}
     >
       <div style={{
-        fontSize: '36px',
-        marginRight: '20px'
+        fontSize: isMobile ? '24px' : '36px',
+        marginRight: isMobile ? '10px' : '20px'
       }}>
         {icon}
       </div>
       <div>
-        <h2 style={{ marginTop: 0, color: '#222', marginBottom: '5px' }}>{title}</h2>
-        <p style={{ color: '#555', fontSize: '18px' }}>{value}</p>
+        <h2 style={{ 
+          marginTop: 0, 
+          color: '#222', 
+          marginBottom: '5px',
+          fontSize: isMobile ? '18px' : '22px'
+        }}>
+          {title}
+        </h2>
+        <p style={{ 
+          color: '#555', 
+          fontSize: isMobile ? '14px' : '18px',
+          wordBreak: 'break-word'
+        }}>
+          {value}
+        </p>
       </div>
     </div>
   );
 };
 
-const ProjectCard = ({ title, description, technologies }) => {
+const ProjectCard = ({ title, description, technologies, isMobile }) => {
   return (
     <div style={{
       backgroundColor: 'white',
       borderRadius: '8px',
-      width: '100wh',
-      padding: '25px',
+      width: '100%',
+      padding: isMobile ? '15px' : '25px',
       boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
       transition: 'transform 0.2s ease-in-out'
     }}>
-      <h2 style={{ marginTop: 0, color: '#222' }}>{title}</h2>
-      <p style={{ color: '#555', lineHeight: '1.6' }}>{description}</p>
+      <h2 style={{ 
+        marginTop: 0, 
+        color: '#222',
+        fontSize: isMobile ? '20px' : '24px'
+      }}>
+        {title}
+      </h2>
+      <p style={{ 
+        color: '#555', 
+        lineHeight: '1.6',
+        fontSize: isMobile ? '14px' : '16px'
+      }}>
+        {description}
+      </p>
       
       <div style={{ marginTop: '15px' }}>
-        <h3 style={{ fontSize: '16px', marginBottom: '8px' }}>Technologies:</h3>
+        <h3 style={{ 
+          fontSize: isMobile ? '14px' : '16px', 
+          marginBottom: '8px' 
+        }}>
+          Technologies:
+        </h3>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
           {technologies.map((tech, index) => (
             <span key={index} style={{
               backgroundColor: '#eaeaea',
-              padding: '5px 10px',
+              padding: isMobile ? '3px 8px' : '5px 10px',
               borderRadius: '15px',
-              fontSize: '14px'
+              fontSize: isMobile ? '12px' : '14px'
             }}>
               {tech}
             </span>
@@ -266,4 +351,4 @@ const ProjectCard = ({ title, description, technologies }) => {
   );
 };
 
-export default App
+export default App;
