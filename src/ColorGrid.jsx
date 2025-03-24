@@ -72,13 +72,16 @@ const ColorGrid = () => {
   const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
 
   const loadGrid = async () => {
-    const removeOld = false;
+    const removeOld = true;
     var noneFound = false;
 
   //  Fetch all existing grid items once
     const { data: items, errors } = await client.models.Grid.list();
     console.log("start loadgrid " + items);
-    if (items.length == 0) nonefound = true;
+    if (items.length == 0) {
+      console.log('nonefound = true');
+      nonefound = true;
+    }
     
     if (removeOld) {
       console.log(`Found ${items.length} items to delete`);
@@ -126,7 +129,6 @@ const ColorGrid = () => {
       //     console.log(dbGrid[i]);
       //   }
      // }
-      console.log(G.current);
       for (let i = 0; i < dbGrid.length; i++) {
       //  if (G.current[Math.floor(i/gridHeight)][i%gridWidth] == 'white') {
           G.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGrid[i];
