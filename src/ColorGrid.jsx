@@ -78,7 +78,7 @@ const ColorGrid = () => {
   //  Fetch all existing grid items once
     const { data: items, errors } = await client.models.Grid.list();
     console.log("start loadgrid " + items);
-    if (items.length == 0) nonefound = false;
+    if (items.length == 0) nonefound = true;
     
     if (removeOld) {
       console.log(`Found ${items.length} items to delete`);
