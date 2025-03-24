@@ -99,7 +99,6 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
     <div className="nav-menu" style={{
       position: 'fixed',
       top: isMobile ? '10px' : '20px',
-      marginTop: '1px',
       right: isMobile ? '10px' : '20px',
       zIndex: 1000,
       backgroundColor: 'rgba(255, 255, 255, 0.8)',
@@ -176,23 +175,26 @@ const Projects = ({ isMobile }) => {
       
       <div className="cards-container">
         <ProjectCard 
-          title="Interactive Color Grid" 
-          description="A dynamic grid where users can click on cells to change their color and view location data. Built with React and AWS Amplify for real-time database updates."
-          technologies={["React", "AWS Amplify", "CSS Grid", "Geolocation API"]}
+          title="Needleman-Wunsch-Demo"
+          link="https://gabehouse.github.io/Needleman-Wunsch-Demo/" 
+          description="Dynamic programming algorithm demo that computes the optimal alignment of two strings."
+          technologies={["React", "Javascript"]}
           isMobile={isMobile}
         />
         
         <ProjectCard 
-          title="Data Visualization Dashboard" 
-          description="A comprehensive dashboard for visualizing complex datasets with interactive charts and filtering capabilities. Designed for both desktop and mobile viewing."
-          technologies={["React", "D3.js", "Responsive Design", "REST API"]}
+          title="Scrimmage"
+          link=""
+          description="Online player vs. player browser game reminiscent of competitive pokemon. Java server deployed with Elastic Beanstalk on an EC2 server."
+          technologies={["AWS", "Jetty WebSockets", "Java", "Javascript", "Raphael.js"]}
           isMobile={isMobile}
         />
         
         <ProjectCard 
-          title="AI-Powered Task Manager" 
-          description="A smart task management application that uses machine learning to prioritize and categorize tasks. Features include natural language processing for task entry and smart scheduling."
-          technologies={["React", "TensorFlow.js", "LocalStorage", "Progressive Web App"]}
+          title="Old personal website" 
+          link ="https://gabehouse.github.io/"
+          description="Cursor-interactable bouncy ball demo written in vanilla javacript."
+          technologies={["Javascript"]}
           isMobile={isMobile}
         />
       </div>
@@ -217,25 +219,25 @@ const Contact = ({ isMobile }) => {
       <div className="cards-container">
         <ContactCard 
           title="Email" 
-          value="contact@example.com"
+          value="gabriel.jsh@gmail.com"
           icon="📧"
-          action="mailto:contact@example.com"
+          action="mailto:gabriel.jsh@gmail.com"
           isMobile={isMobile}
         />
         
         <ContactCard 
           title="LinkedIn" 
-          value="linkedin.com/in/yourprofile"
+          value="linkedin.com/in/gabriel-house"
           icon="💼"
-          action="https://linkedin.com/in/yourprofile"
+          action="https://linkedin.com/in/gabriel-house"
           isMobile={isMobile}
         />
         
         <ContactCard 
           title="GitHub" 
-          value="github.com/yourusername"
+          value="github.com/gabehouse"
           icon="💻"
-          action="https://github.com/yourusername"
+          action="https://github.com/gabehouse"
           isMobile={isMobile}
         />
       </div>
@@ -286,7 +288,7 @@ const ContactCard = ({ title, value, icon, action, isMobile }) => {
   );
 };
 
-const ProjectCard = ({ title, description, technologies, isMobile }) => {
+const ProjectCard = ({ title, description, technologies, isMobile, link}) => {
   return (
     <div style={{
       backgroundColor: 'white',
@@ -301,8 +303,9 @@ const ProjectCard = ({ title, description, technologies, isMobile }) => {
         color: '#222',
         fontSize: isMobile ? '20px' : '24px'
       }}>
-        {title}
+        {title} 
       </h2>
+      <p><a href={link} target="_blank" rel="noopener noreferrer">{link}</a></p>
       <p style={{ 
         color: '#555', 
         lineHeight: '1.6',

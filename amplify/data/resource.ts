@@ -9,17 +9,10 @@ and "delete" any "Todo" records.
 =========================================================================*/
 const schema = a
   .schema({
-    Todo: a
-      .model({
-        content: a.string(),
-        isDone: a.boolean(),
-      }),
     Grid: a
       .model({
         content: a.string(),
         info: a.string(),
-
-   //     id: a.string(),
       }) 
     })
     .authorization((allow) => [allow.guest()]);

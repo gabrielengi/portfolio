@@ -1,7 +1,8 @@
-import React, {useState, useRef, useEffect} from 'react'
+import React, {useState, useRef, useEffect} from 'react';
 
-import { generateClient } from 'aws-amplify/data'
+import { generateClient } from 'aws-amplify/data';
 
+import styles from './Tooltip.module.css';
 const client = generateClient();
 
 
@@ -13,17 +14,19 @@ const ColorGrid = () => {
 
   const [grid, setGrid] = useState([]);
   const cellSize = useRef(20);
+  const gridWidth = 100, gridHeight = 100;
   const [viewWidth, setGridWidth] = useState(10);
   const [viewHeight, setGridHeight] = useState(10);
   const [viewportDimensions, setViewportDimensions] = useState({w: 0, h: 0}); 
-  const G = useRef(new Array(200).fill('white').map(() => new Array(200).fill('white')));
-  const GInfo = useRef(new Array(200).fill('n/a;n/a').map(() => new Array(200).fill('n/a;n/a')));
+  const G = useRef(new Array(gridHeight).fill('white').map(() => new Array(gridWidth).fill('white')));
+  const GInfo = useRef(new Array(gridHeight).fill('n/a;n/a').map(() => new Array(gridWidth).fill('n/a;n/a')));
   const [viewport, setViewport] = useState(new Array(1).fill('white').map(() => new Array(1).fill('white')));
   const [loading, setLoading] = useState(true);
   const [resizing, setResizing] = useState(false);
-  const gridWidth = 200, gridHeight = 200;
+ 
   const viewportCalls = useRef(0);
   const [infoBox, setInfoBox] = useState({x: -1, y: -1, loc: "", date: ""});
+  const squarePlaced = useRef(false);
 
 
 
@@ -69,50 +72,67 @@ const ColorGrid = () => {
   const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
 
   const loadGrid = async () => {
-    // Fetch all existing grid items once
+    const removeOld = false;
+    var noneFound = false;
+
+  //  Fetch all existing grid items once
     const { data: items, errors } = await client.models.Grid.list();
     console.log("start loadgrid " + items);
+    if (items.length == 0) nonefound = false;
     
-    console.log(`Found ${items.length} items to delete`);
-    
-    // Step 2: Delete all items in parallel for efficiency
-    if (items.length > 0) {
-      const deletePromises = items.map(item => 
-        client.models.Grid.delete({ id: item.id })
-      );
+    if (removeOld) {
+      console.log(`Found ${items.length} items to delete`);
       
-      await Promise.all(deletePromises);
-      console.log(`Successfully deleted ${items.length} items`);
-    } else {
-      console.log("No items to delete");
+      // Step 2: Delete all items in parallel for efficiency
+      if (items.length > 0) {
+        const deletePromises = items.map(item => 
+          client.models.Grid.delete({ id: item.id })
+        );
+        
+        await Promise.all(deletePromises);
+        console.log(`Successfully deleted ${items.length} items`);
+      } else {
+        console.log("No items to delete");
+      }
     }
+    if (noneFound || removeOld) {
+      // initialize empty
+      var freshGrid = new Array(gridHeight).fill('white').map(() => new Array(gridWidth).fill('white'));
+      var freshInfo = new Array(gridHeight).fill('s').map(() => new Array(gridWidth).fill('s'));
+
+      addTitle(freshGrid, gridWidth, gridHeight, minTitleWidth, title);
+
+      await client.models.Grid.create({
+        id: '0',
+        content: freshGrid.toString(),
+        info: GInfo.toString(),
+      }); 
+    }
+
     
-    // initialize empty
-    var freshGrid = new Array(gridWidth * gridHeight).fill('white');
-    var freshInfo = new Array(gridWidth * gridHeight).fill("n/a");
-
-    await client.models.Grid.create({
-   //   initialized: true,
-   //   date: "n/a",
-      content: freshGrid.toString(),
-      info: freshInfo.toString(),
-    }); 
 
     
-
-    addTitle(G.current, gridWidth, gridHeight, minTitleWidth, title);
     
     
     // Fetch the updated grid items and log the content
       const { data: newItems, errors: updatedErrors } = await client.models.Grid.list();
-      
+      console.log("data " + newItems);
+     // console.log(newItems[0].content);
       var dbGrid = newItems[0].content.split(',');
-   
+      var dbGInfo = newItems[0].info.split(',');
+      // for (var i = 0; i < dbGrid.length; i++) {
+      //   if (dbGrid[i] != 'white') {
+      //     console.log(dbGrid[i]);
+      //   }
+     // }
+      console.log(G.current);
       for (let i = 0; i < dbGrid.length; i++) {
-        if (G.current[Math.floor(i/gridHeight)][i%gridWidth] == 'white') {
+      //  if (G.current[Math.floor(i/gridHeight)][i%gridWidth] == 'white') {
           G.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGrid[i];
-        } 
+          GInfo.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGInfo[i];
+     //   } 
       }
+      printColors(G.current);
 
       handleResize();
       console.log('done loading');
@@ -125,7 +145,7 @@ const ColorGrid = () => {
 
   useEffect(() => {
     
-   
+   console.log('useeffect');
     loadGrid();
     
  //   fillViewport();
@@ -145,26 +165,15 @@ const ColorGrid = () => {
     console.log("handle resize");
     setResizing(true);
     
-  // Get window dimensions, using more reliable methods for mobile
-    // const windowWidth = window.innerWidth || document.documentElement.clientWidth || document.body.clientWidth;
-    // const windowHeight = window.innerHeight || document.documentElement.clientHeight || document.body.clientHeight;
     const windowWidth = document.documentElement.clientWidth; // works well 
     const windowHeight = document.documentElement.clientHeight;
    
-    
-    
-    // Calculate required width with a bit more space for mobile
     const requiredWidth = minTitleWidth * 1.25;
 
     cellSize.current = Math.min(20, Math.floor(windowWidth / requiredWidth));
     cellSize.current = Math.max(5, cellSize.current);
     
     console.log("window width = " + windowWidth + "cellsize " + cellSize.current + "requiredWidth " + requiredWidth);
-    // Get the smaller of our default or the calculated size
-    // let optimalSize = Math.min(20, Math.floor(windowWidth / requiredWidth));
-    // optimalSize = Math.max(5, optimalSize); // Make sure it's at least 5px
-    // cellSize = optimalSize;
-  
 
     let screenWidthInCells = Math.ceil(windowWidth / cellSize.current);
     let screenHeightInCells = Math.ceil(windowHeight / cellSize.current);
@@ -178,7 +187,13 @@ const ColorGrid = () => {
   
 
   const printGridStr = async () => {
+    console.log("pgs");
     const { data: items, errors: errors } = await client.models.Grid.list();
+    console.log(items);
+    items[0].content.split(',').map((c)=>{if (c != 'white') console.log(c);})
+   // items[0].info.split(',').map((c)=>{if (c != 'white') console.log(c);})
+      
+    
   }
   function showInfo(i, j) {
     const viewportStartY = Math.ceil(gridHeight/2 - viewportDimensions.h/2);
@@ -186,40 +201,47 @@ const ColorGrid = () => {
     const infoTokens = GInfo.current[i+viewportStartY][j+viewportStartX].split(';');
     const loc = infoTokens[0];
     const date =  infoTokens[1];
-    setInfoBox({y: i*cellSize.current- 30, x: j*cellSize.current + 21, loc:loc, date:date});
+    setInfoBox({y: i*cellSize.current, x: j*cellSize.current, loc:loc, date:date});
   }
   function hideInfo(){
     setInfoBox({x: -1, y: -1, loc:"", date:""});
  console.log("hideinfo ");
   }
   const updateGrid = async (i,j,color) => {
+    console.log("updategrid");
+    squarePlaced.current = true;
     const viewportStartY = Math.ceil(gridHeight/2 - viewportDimensions.h/2);
     const viewportStartX = Math.ceil(gridWidth/2 - viewportDimensions.w/2);
     G.current[i+viewportStartY][j+viewportStartX] = color;
-    viewport[i][j]  = color;
 
+
+    viewport[i][j]  = color;
+    // get location and date
     const response = await fetch('https://ip2c.org/s');
     const text = await response.text();
     const today = new Date();
-    GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[1] + ';' + today.toLocaleDateString();
+    // add to local info grid
+    GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[2] + ';' + today.toLocaleDateString();
    // const data = await response.json();
-    
-    console.log('update' + text.split(';')[1] + ';' + today.toLocaleDateString());
-   // console.log("city = " + data.city + ', ' + data.country + ", date = " + today.toLocaleDateString());
-    
-
+    // update database with local info grid
+    printColors(G.current);
     await client.models.Grid.update({
-      info: GInfo.current.toString(),
-      //location: 'data.city + ', ' + data.country',
-  //    date: 'a',
-    // locationArray = :
+      id: 0,
       content: G.current.toString(),
+      info: GInfo.current.toString(),
     });
-
- //   printGridStr();
   }
   
-
+function printColors(grid){
+  console.log('printcolors ');
+  for (var i = 0; i < grid.length; i++) {
+    for (var j = 0; j < grid.length; j++) {
+      if (grid[i][j] != 'white') {
+        console.log(grid[i][j]);
+      }
+    }
+  }
+}
     
     
   function addTitle(gCurrent, gridWidth, gridHeight, minTitleWidth, title) { // fills gCurrent with the title at its center
@@ -296,6 +318,9 @@ const ColorGrid = () => {
       }
     }
   }
+  function isSquarePlaced() {
+    return squarePlaced.current;
+  }
   
 
   if (loading) {
@@ -309,7 +334,7 @@ const ColorGrid = () => {
     <div>
       {viewport.map((row, i) =>(
         row.map((cell, j) =>(
-          <Square  key={`${i}-${j}-${viewportDimensions.w}-${viewportDimensions.h}-${cellSize.current}`} i={i} j={j} cellWidth={cellSize.current} cellHeight={cellSize.current} updateGrid={updateGrid} initColor={viewport[i][j]} showInfo={()=>showInfo(i, j)} hideInfo={() => hideInfo()}/>
+          <Square  key={`${i}-${j}-${viewportDimensions.w}-${viewportDimensions.h}-${cellSize.current}`} i={i} j={j} cellWidth={cellSize.current} cellHeight={cellSize.current} updateGrid={updateGrid} initColor={viewport[i][j]} showInfo={()=>showInfo(i, j)} hideInfo={hideInfo} isSquarePlaced={isSquarePlaced}/>
         ))
       ))}
       <InfoBox key={`${infoBox.x}-${infoBox.y}`} x={infoBox.x} y={infoBox.y} loc={infoBox.loc} date={infoBox.date}/>
@@ -320,24 +345,27 @@ const ColorGrid = () => {
 function InfoBox({x, y, loc, date}) {
   if(x < 0) return <div></div>
   return(
-  <div className="infoBox"
-  style={{
+  <div className={styles.tooltip}
+   style={{
     position:'absolute',
-    left: `${x}px`,
-    top: `${y}px`,
-    width: '120px',
-    height: '50px',
-    backgroundColor: 'yellow',
-    textAlign: 'left',
+    left: `${x - 5}px`,
+    top: `${y + 35}px`,
+    width: '90px',
+    height: '45px',
+    lineHeight: '7px',
+    fontSize: '12px',
+    paddingTop: "0px",
+
+
   }}>
-    <p><b>loc: </b>{loc}</p>
-    <p><b>date: </b>{date}</p>
+    <p><b>Country: </b>{loc}</p>
+    <p><b>Date: </b>{date}</p>
   </div>
   )
 
 } 
 
-function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, hideInfo}) {
+function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, hideInfo, isSquarePlaced}) {
   const [color,setColor] = useState(initColor);
   const getRandomColor = () => {
     const letters = '0123456789ABCDEF';
@@ -348,7 +376,8 @@ function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, h
     return color;
   };
     
-  function onSquareClick() {
+  function onSquareClick(squarePlaced) {
+    if (isSquarePlaced()) return;
     console.log(color);
     if (color == 'white') {
       
@@ -369,7 +398,7 @@ function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, h
   }
 //  console.log(color);
   return (
-    <div className="square" onClick={() => onSquareClick()} onMouseOver={() => onMouseOver()} onMouseLeave={() => onMouseLeave()}
+    <div className="square" onClick={onSquareClick} onMouseOver={onMouseOver} onMouseLeave={ onMouseLeave}
     style={{
       width:`${cellWidth}px`,
       height:`${cellHeight}px`,
