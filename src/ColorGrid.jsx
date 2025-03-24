@@ -96,6 +96,7 @@ const ColorGrid = () => {
       }
     }
     if (noneFound || removeOld) {
+      console.log('nonefound');
       // initialize empty
       var freshGrid = new Array(gridHeight).fill('white').map(() => new Array(gridWidth).fill('white'));
       var freshInfo = new Array(gridHeight).fill('s').map(() => new Array(gridWidth).fill('s'));
