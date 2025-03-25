@@ -72,7 +72,7 @@ const ColorGrid = () => {
   const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
 
   const loadGrid = async () => {
-    const removeOld = true;
+    const removeOld = false;
     var noneFound = false;
 
   //  Fetch all existing grid items once
