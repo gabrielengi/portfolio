@@ -2,7 +2,7 @@ import React, {useState, useRef, useEffect} from 'react';
 
 import { generateClient } from 'aws-amplify/data';
 
-import styles from './Tooltip.module.css';
+//import styles from './ColorGrid.css';
 const client = generateClient();
 
 
@@ -72,7 +72,7 @@ const ColorGrid = () => {
   const minTitleWidth = title.length * 4 - 1; // Each letter is 3 wide + 1 space, minus 1 at the end
 
   const loadGrid = async () => {
-    const removeOld = true;
+    const removeOld = false;
     var noneFound = false;
 
   //  Fetch all existing grid items once
@@ -80,7 +80,7 @@ const ColorGrid = () => {
     console.log("start loadgrid " + items);
     if (items.length == 0) {
       console.log('nonefound = true');
-      nonefound = true;
+      noneFound = true;
     }
     
     if (removeOld) {
@@ -102,14 +102,13 @@ const ColorGrid = () => {
       console.log('nonefound');
       // initialize empty
       var freshGrid = new Array(gridHeight).fill('white').map(() => new Array(gridWidth).fill('white'));
-      var freshInfo = new Array(gridHeight).fill('s').map(() => new Array(gridWidth).fill('s'));
 
       addTitle(freshGrid, gridWidth, gridHeight, minTitleWidth, title);
 
       await client.models.Grid.create({
         id: '0',
         content: freshGrid.toString(),
-        info: GInfo.toString(),
+        info: GInfo.current.toString(),
       }); 
     }
 
@@ -123,16 +122,17 @@ const ColorGrid = () => {
       console.log("data " + newItems);
      // console.log(newItems[0].content);
       var dbGrid = newItems[0].content.split(',');
-      var dbGInfo = newItems[0].info.split(',');
-      // for (var i = 0; i < dbGrid.length; i++) {
-      //   if (dbGrid[i] != 'white') {
-      //     console.log(dbGrid[i]);
-      //   }
-     // }
+      var dbInfoGrid = newItems[0].info.split(',');
+
+      for (var i = 0; i < dbInfoGrid.length; i++) {
+        if (dbInfoGrid[i] != 'n/a;n/a') {
+          console.log(dbInfoGrid[i]);
+        }
+     }
       for (let i = 0; i < dbGrid.length; i++) {
       //  if (G.current[Math.floor(i/gridHeight)][i%gridWidth] == 'white') {
           G.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGrid[i];
-          GInfo.current[Math.floor(i/gridHeight)][i%gridWidth] = dbGInfo[i];
+          GInfo.current[Math.floor(i/gridHeight)][i%gridWidth] = dbInfoGrid[i];
      //   } 
       }
       printColors(G.current);
@@ -345,12 +345,43 @@ function printColors(grid){
   );
 };
 
+const tooltipStyle = {
+  position: 'relative',
+  display: 'inline-block',
+  backgroundColor: '#333',
+  color: 'white',
+  padding: '8px 12px',
+  borderRadius: '4px',
+
+  width: '90px',
+  height: '45px',
+  lineHeight: '7px',
+  fontSize: '12px',
+  paddingTop: "0px",
+};
+
+const tooltipArrowStyle = {
+  content: '""',
+  position: 'absolute',
+  top: '100%',
+  left: '50%',
+  marginLeft: '-8px',
+  borderWidth: '8px',
+  borderStyle: 'solid',
+  borderColor: '#333 transparent transparent transparent',
+};
+
 function InfoBox({x, y, loc, date}) {
+    console.log('infobox ' + loc +' ' + date);
   if(x < 0) return <div></div>
   return(
-  <div className={styles.tooltip}
-   style={{
-    position:'absolute',
+  <div styles={tooltipStyle} style={ { 
+    position: 'relative',
+    display: 'inline-block',
+    backgroundColor: '#333',
+    color: 'white',
+    padding: '8px 12px',
+    borderRadius: '4px',
     left: `${x - 5}px`,
     top: `${y + 35}px`,
     width: '90px',
@@ -358,12 +389,21 @@ function InfoBox({x, y, loc, date}) {
     lineHeight: '7px',
     fontSize: '12px',
     paddingTop: "0px",
-
-
-  }}>
+    }}>
     <p><b>Country: </b>{loc}</p>
     <p><b>Date: </b>{date}</p>
+    <div style={{
+  content: '""',
+  position: 'absolute',
+  bottom: '100%',
+  left: '14%',
+  marginLeft: '-8px',
+  borderWidth: '8px',
+  borderStyle: 'solid',
+  borderColor: 'transparent transparent #333 transparent',
+    }}></div>
   </div>
+  
   )
 
 } 
