@@ -18,6 +18,7 @@ const App = () => {
         width: document.documentElement.clientWidth,
         height: document.documentElement.clientHeight
       });
+      console.log(document.documentElement.clientWidth);
     };
     
     window.addEventListener('resize', handleResize);
@@ -57,7 +58,7 @@ const App = () => {
   const isMobile = dimensions.width < 768;
 
   return (
-    <div className="app-container"> 
+    <div className="app-container" style={{ minWidth: '100vw', backgroundColor: '#F0DFC3'}}> 
       <NavigationMenu 
         currentPage={currentPage} 
         scrollToHome={scrollToHome} 
@@ -67,28 +68,24 @@ const App = () => {
       />
       <section 
         ref={homeRef} 
-        className="page-section full-height"
-        style={{ height: `${dimensions.height}px` }}
+        className="page-section"
+        style={{ height: `${dimensions.height}px`, width: '100%' }}
       >
         <ColorGrid />
       </section>
       <section 
         ref={projectsRef} 
-        className="page-section full-height flex-center"
-        style={{ minHeight: `${dimensions.height}px` }}
+        className="page-section"
+        style={{ minHeight: `${dimensions.height}px`, width: '100%' }}
       >
-        <div className="content-container">
-          <Projects isMobile={isMobile} />
-        </div>
+        <Projects  />
       </section>
       <section 
         ref={contactRef} 
-        className="page-section full-height flex-center"
-        style={{ minHeight: `${dimensions.height}px` }}
+        className="page-section"
+        style={{ minHeight: `${dimensions.height}px`, width: '100%' }}
       >
-        <div className="content-container">
-          <Contact isMobile={isMobile} />
-        </div>
+        <Contact  />
       </section>
     </div>
   );
@@ -96,30 +93,28 @@ const App = () => {
 
 const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToContact, isMobile }) => {
   return (
-    <div className="nav-menu" style={{
+    <nav style={{
       position: 'fixed',
-      top: isMobile ? '10px' : '20px',
-      right: isMobile ? '10px' : '20px',
+      top: '0',
+      width: '100%',
+      padding: '12px 0',
+      backgroundColor: '#F0DFC3',
+      borderBottom: '0px solid #eaeaea',
       zIndex: 1000,
-      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-      padding: isMobile ? '5px 10px' : '8px 16px',
-      borderRadius: '5px',
-      boxShadow: '0 2px 5px rgba(0, 0, 0, 0.2)',
-      display: 'flex',
-      gap: isMobile ? '10px' : '15px',
-      
+      textAlign: 'center'
     }}>
       <button 
         onClick={scrollToHome} 
         style={{
           border: 'none',
           background: 'none',
-          fontSize: isMobile ? '14px' : '16px',
-          fontWeight: currentPage === "home" ? 'bold' : 'normal',
+          fontSize: '16px',
+       //  fontWeight: currentPage === "home" ? 'bold' : 'normal',
           color: currentPage === "home" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px',
-          outline: '0px'
+          margin: '0 15px',
+          padding: '5px 0',
+          outline: 'none',
         }}
       >
         Home
@@ -129,12 +124,13 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         style={{
           border: 'none',
           background: 'none',
-          fontSize: isMobile ? '14px' : '16px',
-          fontWeight: currentPage === "projects" ? 'bold' : 'normal',
+          fontSize: '16px',
+     //     fontWeight: currentPage === "projects" ? 'bold' : 'normal',
           color: currentPage === "projects" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px',
-          outline: '0px'
+          margin: '0 15px',
+          padding: '5px 0',
+          outline: 'none',
         }}
       >
         Projects
@@ -144,195 +140,146 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
         style={{
           border: 'none',
           background: 'none',
-          fontSize: isMobile ? '14px' : '16px',
-          fontWeight: currentPage === "contact" ? 'bold' : 'normal',
+          fontSize: '16px',
+      //    fontWeight: currentPage === "contact" ? 'bold' : 'normal',
           color: currentPage === "contact" ? '#007bff' : '#333',
           cursor: 'pointer',
-          padding: isMobile ? '5px' : '8px',
-          outline: '0px'
+          margin: '0 15px',
+          padding: '5px 0',
+          outline: 'none',
         }}
       >
         Contact
       </button>
-    </div>
+    </nav>
   );
 };
 
-
 const Projects = ({ isMobile }) => {
+  const projects = [
+    {
+      title: "Needleman-Wunsch-Demo",
+      link: "https://gabehouse.github.io/Needleman-Wunsch-Demo/",
+      description: "Dynamic programming algorithm demo that computes the optimal alignment of two strings.",
+      technologies: ["React", "Javascript"]
+    },
+    {
+      title: "Animalia",
+      link: "http://ani-env.eba-t9edz5sk.us-east-2.elasticbeanstalk.com/",
+      description: "Online player vs. player game. Java server deployed with Terraform and Elastic Beanstalk to an EC2 server.",
+      technologies: ["AWS", "Terraform", "Jetty WebSockets", "Java", "Javascript", "Raphael.js"]
+    },
+    {
+      title: "Old personal website",
+      link: "https://gabehouse.github.io/",
+      description: "Cursor-interactable bouncy ball demo written in vanilla javacript.",
+      technologies: ["Javascript"]
+    }
+  ];
+
   return (
-    <div className="content-area projects-content" style={{
-      padding: isMobile ? '20px 10px' : '40px 20px',
-      backgroundColor: '#f5f5f5',
+    <div style={{
+      padding: '60px 5%',
+      width: '100%',
+      boxSizing: 'border-box'
     }}>
-      <h1 className="text-center" style={{
-        marginBottom: isMobile ? '20px' : '40px',
+      <h1 style={{
+        marginBottom: '30px',
         color: '#333',
-        fontSize: isMobile ? '24px' : '32px'
+        borderBottom: '0px solid #ddd',
+        paddingBottom: '10px'
       }}>
         My Projects
       </h1>
       
-      <div className="cards-container">
-        <ProjectCard 
-          title="Needleman-Wunsch-Demo"
-          link="https://gabehouse.github.io/Needleman-Wunsch-Demo/" 
-          description="Dynamic programming algorithm demo that computes the optimal alignment of two strings."
-          technologies={["React", "Javascript"]}
-          isMobile={isMobile}
-        />
-        
-        <ProjectCard 
-          title="Scrimmage"
-          link=""
-          description="Online player vs. player browser game reminiscent of competitive pokemon. Java server deployed with Elastic Beanstalk on an EC2 server."
-          technologies={["AWS", "Jetty WebSockets", "Java", "Javascript", "Raphael.js"]}
-          isMobile={isMobile}
-        />
-        
-        <ProjectCard 
-          title="Old personal website" 
-          link ="https://gabehouse.github.io/"
-          description="Cursor-interactable bouncy ball demo written in vanilla javacript."
-          technologies={["Javascript"]}
-          isMobile={isMobile}
-        />
+      <div style={{ marginTop: '20px', width: '100%' }}>
+        {projects.map((project, index) => (
+          <div key={index} style={{ 
+            marginBottom: '30px',
+            borderBottom: index < projects.length - 1 ? '0px solid #eee' : 'none',
+            paddingBottom: '20px',
+            width: '100%'
+          }}>
+            <h2 style={{ margin: '0 0 5px' }}>{project.title}</h2>
+            {project.link && (
+              <a href={project.link} 
+                 target="_blank" 
+                 rel="noopener noreferrer"
+                 style={{ 
+                   display: 'inline-block',
+                   marginBottom: '10px',
+                   color: '#007bff',
+                   textDecoration: 'none'
+                 }}>
+                {project.link}
+              </a>
+            )}
+            <p style={{ marginTop: '5px' }}>{project.description}</p>
+            <div style={{ marginTop: '10px' }}>
+              <span style={{ fontWeight: '500' }}>Technologies: </span>
+              {project.technologies.join(', ')}
+            </div>
+          </div>
+        ))}
       </div>
     </div>
   );
 };
 
 const Contact = ({ isMobile }) => {
+  const contacts = [
+    {
+      title: "Email",
+      value: "gabriel.jsh@gmail.com",
+      action: "mailto:gabriel.jsh@gmail.com"
+    },
+    {
+      title: "LinkedIn",
+      value: "linkedin.com/in/gabriel-house",
+      action: "https://linkedin.com/in/gabriel-house"
+    },
+    {
+      title: "GitHub",
+      value: "github.com/gabehouse",
+      action: "https://github.com/gabehouse"
+    }
+  ];
+
   return (
-    <div className="content-area contact-content" style={{
-      padding: isMobile ? '20px 10px' : '40px 20px',
-      backgroundColor: '#e8f4fc',
+    <div style={{
+      padding: '60px 5%',
+      width: '100%',
+      boxSizing: 'border-box'
     }}>
-      <h1 className="text-center" style={{
-        marginBottom: isMobile ? '20px' : '40px',
+      <h1 style={{
+        marginBottom: '30px',
         color: '#333',
-        fontSize: isMobile ? '24px' : '32px'
+        borderBottom: '0px solid #ddd',
+        paddingBottom: '10px'
       }}>
         Contact Me
       </h1>
       
-      <div className="cards-container">
-        <ContactCard 
-          title="Email" 
-          value="gabriel.jsh@gmail.com"
-          icon="📧"
-          action="mailto:gabriel.jsh@gmail.com"
-          isMobile={isMobile}
-        />
-        
-        <ContactCard 
-          title="LinkedIn" 
-          value="linkedin.com/in/gabriel-house"
-          icon="💼"
-          action="https://linkedin.com/in/gabriel-house"
-          isMobile={isMobile}
-        />
-        
-        <ContactCard 
-          title="GitHub" 
-          value="github.com/gabehouse"
-          icon="💻"
-          action="https://github.com/gabehouse"
-          isMobile={isMobile}
-        />
-      </div>
-    </div>
-  );
-};
-
-const ContactCard = ({ title, value, icon, action, isMobile }) => {
-  return (
-    <div 
-      style={{
-        backgroundColor: 'white',
-        borderRadius: '8px',
-        padding: isMobile ? '15px' : '25px',
-        boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-        transition: 'transform 0.2s ease-in-out',
-        display: 'flex',
-        width: '100%',
-        alignItems: 'center',
-        cursor: 'pointer'
-      }}
-      onClick={() => window.open(action, '_blank')}
-    >
-      <div style={{
-        fontSize: isMobile ? '24px' : '36px',
-        marginRight: isMobile ? '10px' : '20px'
-      }}>
-        {icon}
-      </div>
-      <div>
-        <h2 style={{ 
-          marginTop: 0, 
-          color: '#222', 
-          marginBottom: '5px',
-          fontSize: isMobile ? '18px' : '22px'
-        }}>
-          {title}
-        </h2>
-        <p style={{ 
-          color: '#555', 
-          fontSize: isMobile ? '14px' : '18px',
-          wordBreak: 'break-word'
-        }}>
-          {value}
-        </p>
-      </div>
-    </div>
-  );
-};
-
-const ProjectCard = ({ title, description, technologies, isMobile, link}) => {
-  return (
-    <div style={{
-      backgroundColor: 'white',
-      borderRadius: '8px',
-      width: '100%',
-      padding: isMobile ? '15px' : '25px',
-      boxShadow: '0 4px 8px rgba(0, 0, 0, 0.1)',
-      transition: 'transform 0.2s ease-in-out'
-    }}>
-      <h2 style={{ 
-        marginTop: 0, 
-        color: '#222',
-        fontSize: isMobile ? '20px' : '24px'
-      }}>
-        {title} 
-      </h2>
-      <p><a href={link} target="_blank" rel="noopener noreferrer">{link}</a></p>
-      <p style={{ 
-        color: '#555', 
-        lineHeight: '1.6',
-        fontSize: isMobile ? '14px' : '16px'
-      }}>
-        {description}
-      </p>
-      
-      <div style={{ marginTop: '15px' }}>
-        <h3 style={{ 
-          fontSize: isMobile ? '14px' : '16px', 
-          marginBottom: '8px' 
-        }}>
-          Technologies:
-        </h3>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
-          {technologies.map((tech, index) => (
-            <span key={index} style={{
-              backgroundColor: '#eaeaea',
-              padding: isMobile ? '3px 8px' : '5px 10px',
-              borderRadius: '15px',
-              fontSize: isMobile ? '12px' : '14px'
-            }}>
-              {tech}
-            </span>
-          ))}
-        </div>
+      <div style={{ marginTop: '20px', width: '100%' }}>
+        {contacts.map((contact, index) => (
+          <div key={index} style={{ 
+            marginBottom: '20px',
+            borderBottom: index < contacts.length - 1 ? '0px solid #eee' : 'none',
+            paddingBottom: '15px',
+            width: '100%'
+          }}>
+            <h2 style={{ margin: '0 0 5px' }}>{contact.title}</h2>
+            <a href={contact.action}
+               target="_blank" 
+               rel="noopener noreferrer"
+               style={{ 
+                 color: '#007bff',
+                 textDecoration: 'none'
+               }}>
+              {contact.value}
+            </a>
+          </div>
+        ))}
       </div>
     </div>
   );

@@ -219,12 +219,21 @@ const ColorGrid = () => {
 
 
     viewport[i][j]  = color;
-    // get location and date
-    const response = await fetch('https://ip2c.org/s');
-    const text = await response.text();
+    // get location and date2
+    var text;
     const today = new Date();
+    try {
+      const response = await fetch('https://ip2c.org/s');
+      text = await response.text();
+      GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[2] + ';' + today.toLocaleDateString();
+    } catch {
+
+      GInfo.current[i+viewportStartY][j+viewportStartX] = 'Hidden;' + today.toLocaleDateString();
+    }
+    
+
     // add to local info grid
-    GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[2] + ';' + today.toLocaleDateString();
+    
    // const data = await response.json();
     // update database with local info grid
     printColors(G.current);
@@ -390,7 +399,7 @@ function InfoBox({x, y, loc, date}) {
     fontSize: '12px',
     paddingTop: "0px",
     }}>
-    <p><b>Country: </b>{loc}</p>
+    <p><b>Loc: </b>{loc}</p>
     <p><b>Date: </b>{date}</p>
     <div style={{
   content: '""',
