@@ -393,7 +393,7 @@ function InfoBox({x, y, loc, date}) {
     borderRadius: '4px',
     left: `${x - 5}px`,
     top: `${y + 35}px`,
-    width: '90px',
+    width: '100px',
     height: '45px',
     lineHeight: '7px',
     fontSize: '12px',
