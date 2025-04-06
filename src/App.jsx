@@ -58,7 +58,7 @@ const App = () => {
   const isMobile = dimensions.width < 768;
 
   return (
-    <div className="app-container" style={{ minWidth: '100vw', backgroundColor: '#F0DFC3'}}> 
+    <div className="app-container" style={{ minWidth: '100vw', backgroundColor: '#F0DFC3', overFlowX: 'hidden'}}> 
       <NavigationMenu 
         currentPage={currentPage} 
         scrollToHome={scrollToHome} 
@@ -181,7 +181,8 @@ const Projects = ({ isMobile }) => {
     <div style={{
       padding: '60px 5%',
       width: '100%',
-      boxSizing: 'border-box'
+      boxSizing: 'border-box',
+      
     }}>
       <h1 style={{
         marginBottom: '30px',
