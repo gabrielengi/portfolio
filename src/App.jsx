@@ -166,13 +166,13 @@ const Projects = ({ isMobile }) => {
     {
       title: "Animalia",
       link: "http://ani-env.eba-t9edz5sk.us-east-2.elasticbeanstalk.com/",
-      description: "Online player vs. player game. Java server deployed with Terraform and Elastic Beanstalk to an EC2 server.",
+      description: "Online PvP game with a Java backend, deployed to AWS EC2 via Elastic Beanstalk and managed with Terraform.",
       technologies: ["AWS", "Terraform", "Jetty WebSockets", "Java", "Javascript", "Raphael.js"]
     },
     {
       title: "Old personal website",
       link: "https://gabehouse.github.io/",
-      description: "Cursor-interactable bouncy ball demo written in vanilla javacript.",
+      description: "Interactable bouncy ball demo.",
       technologies: ["Javascript"]
     }
   ];
