@@ -464,6 +464,7 @@ function Square({i, j, cellWidth, cellHeight, updateGrid, initColor, showInfo, h
       
     </div>
   );
+
 }
 export default ColorGrid;
 

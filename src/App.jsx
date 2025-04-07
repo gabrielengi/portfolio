@@ -66,13 +66,17 @@ const App = () => {
         scrollToContact={scrollToContact}
         isMobile={isMobile}
       />
+      
       <section 
         ref={homeRef} 
         className="page-section"
         style={{ height: `${dimensions.height}px`, width: '100%' }}
       >
+        
         <ColorGrid />
+        <Popup height={dimensions.height*0.7}/>
       </section>
+      
       <section 
         ref={projectsRef} 
         className="page-section"
@@ -90,6 +94,53 @@ const App = () => {
     </div>
   );
 };
+
+function Popup({height}) {
+  const [showPopup, setShowPopup] = useState(true); // Set to true initially
+  
+  const closePopup = () => {
+    setShowPopup(false);
+  };
+  
+  return (
+    <div>
+      {showPopup && (
+        <div style={{
+          position: 'absolute',
+          top: "60vh",
+          left: '50%',
+          transform: 'translateX(-50%)',
+          width: '300px',
+          padding: '30px 15px 15px 15px',
+          backgroundColor: '#F0DFC3',
+          boxShadow: '0 6px 12px rgba(0,0,0,0.3)',
+          borderRadius: '4px',
+          zIndex: 10,
+        }}>
+          {/* X button in top right corner */}
+          <button 
+            onClick={closePopup}
+            style={{
+              position: 'absolute',
+              top: '10px',
+              right: '10px',
+              background: 'none',
+              border: 'none',
+              fontSize: '16px',
+              fontWeight: 'bold',
+              cursor: 'pointer'
+            }}
+          >
+            ✕
+          </button>
+          
+          <h3>Welcome!</h3>
+          <p>Please click in a blank space to leave your visitor record.</p>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToContact, isMobile }) => {
   return (
@@ -172,7 +223,7 @@ const Projects = ({ isMobile }) => {
     {
       title: "Old personal website",
       link: "https://gabehouse.github.io/",
-      description: "Interactable bouncy ball demo.",
+      description: "Interactive bouncy ball simulation.",
       technologies: ["Javascript"]
     }
   ];
