@@ -228,7 +228,7 @@ const ColorGrid = () => {
       GInfo.current[i+viewportStartY][j+viewportStartX] = text.split(';')[2] + ';' + today.toLocaleDateString();
     } catch {
 
-      GInfo.current[i+viewportStartY][j+viewportStartX] = 'Hidden;' + today.toLocaleDateString();
+      GInfo.current[i+viewportStartY][j+viewportStartX] = 'Inaccessible;' + today.toLocaleDateString();
     }
     
 

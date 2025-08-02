@@ -209,7 +209,13 @@ const NavigationMenu = ({ currentPage, scrollToHome, scrollToProjects, scrollToC
 const Projects = ({ isMobile }) => {
   const projects = [
     {
-      title: "Needleman-Wunsch-Demo",
+      title: "Grand River Tennis Lessons",
+      link: "https://grandrivertennis.ca/",
+      description: "A robust, cloud-native scheduling app leveraging Amplify Gen 2 to orchestrate backend services, including Cognito for authentication, Lambda functions for email notifications, and a GraphQL API for data management.",
+      technologies: ["Javascript", "React", "Amplify", "Lambda", "DynamoDB"]
+    },
+    {
+      title: "Needleman-Wunsch Demo",
       link: "https://gabehouse.github.io/Needleman-Wunsch-Demo/",
       description: "Dynamic programming algorithm demo that computes the optimal alignment of two strings.",
       technologies: ["React", "Javascript"]
@@ -218,10 +224,16 @@ const Projects = ({ isMobile }) => {
       title: "Animalia",
       link: "http://ani-env.eba-t9edz5sk.us-east-2.elasticbeanstalk.com/",
       description: "Online PvP game with a Java backend, deployed to AWS EC2 via Elastic Beanstalk and managed with Terraform.",
-      technologies: ["AWS", "Terraform", "Jetty WebSockets", "Java", "Javascript", "Raphael.js"]
+      technologies: ["AWS", "Terraform", "Jetty", "Java", "Javascript", "Raphael.js"]
     },
     {
-      title: "Old personal website",
+      title: "Portfolio Website",
+      link: "https://main.d3vqrwoepyh6ki.amplifyapp.com/",
+      description: "React website with DynamoDB database backend hosted with AWS Amplify.",
+      technologies: ["Javascript, React, DynamoDB, AWS"]
+    },
+    {
+      title: "Old Personal Website",
       link: "https://gabehouse.github.io/",
       description: "Interactive bouncy ball simulation.",
       technologies: ["Javascript"]
